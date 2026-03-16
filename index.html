@@ -475,6 +475,127 @@
     border-color: var(--blue);
   }
 
+  /* Freelance project cards */
+  .project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .proj-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 24px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .proj-card:hover {
+    border-color: var(--cyan);
+    transform: translateY(-3px);
+  }
+  .proj-card-icon {
+    font-size: 1.6rem;
+    margin-bottom: 12px;
+    display: block;
+  }
+  .proj-card h4 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .proj-card p {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+  .proj-card-tech {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .proj-card-tag {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 4px;
+    background: rgba(57,210,192,0.08);
+    color: var(--cyan);
+    border: 1px solid rgba(57,210,192,0.15);
+  }
+  .proj-card-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    background: rgba(125,133,144,0.1);
+    padding: 3px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 12px;
+  }
+
+  /* CTA sticky bar */
+  .cta-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(13,17,23,0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--card-border);
+    padding: 14px 24px;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    transform: translateY(100%);
+    transition: transform 0.4s ease;
+  }
+  .cta-bar.visible {
+    transform: translateY(0);
+  }
+  .cta-text {
+    font-family: var(--font-mono);
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+  .cta-text span { color: var(--green); }
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 8px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+  }
+  .cta-btn.email {
+    background: var(--blue);
+    color: #fff;
+  }
+  .cta-btn.email:hover {
+    background: #4a9aea;
+    box-shadow: 0 4px 16px rgba(88,166,255,0.25);
+  }
+  .cta-btn.linkedin {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    color: var(--white);
+  }
+  .cta-btn.linkedin:hover {
+    border-color: var(--blue);
+  }
+
   /* Responsive */
   @media (max-width: 640px) {
     .terminal-body { padding: 16px; font-size: 0.78rem; }
@@ -490,6 +611,13 @@
 <body>
 
 <canvas id="particles"></canvas>
+
+<!-- Sticky CTA -->
+<div class="cta-bar" id="ctaBar">
+  <span class="cta-text"><span>&gt;&gt;&gt;</span> Ready to ship together?</span>
+  <a class="cta-btn email" href="mailto:tahseen.rahman@outlook.in">Email me</a>
+  <a class="cta-btn linkedin" href="https://www.linkedin.com/in/tahseen09" target="_blank">LinkedIn</a>
+</div>
 
 <!-- PHASE 1: Terminal Installation -->
 <div class="terminal-phase" id="terminalPhase">
@@ -643,6 +771,52 @@
       <span class="skill-tag">Azure</span>
       <span class="skill-tag">Grafana</span>
       <span class="skill-tag">Git</span>
+    </div>
+  </div>
+
+  <!-- Freelance Projects -->
+  <div class="section" id="sectionProjects">
+    <div class="section-label"># side_projects</div>
+    <div class="section-title">What I build on my own time</div>
+    <div class="project-grid">
+
+      <div class="proj-card">
+        <span class="proj-card-icon">&#127973;</span>
+        <span class="proj-card-label">Freelance</span>
+        <h4>ICU Management System</h4>
+        <p>End-to-end ICU management platform &mdash; admissions, health stat tracking, AI-enabled vitals extraction from monitor photos, and performance insights across ICU units.</p>
+        <div class="proj-card-tech">
+          <span class="proj-card-tag">Python</span>
+          <span class="proj-card-tag">Django</span>
+          <span class="proj-card-tag">AI / CV</span>
+          <span class="proj-card-tag">SQLite3</span>
+        </div>
+      </div>
+
+      <div class="proj-card">
+        <span class="proj-card-icon">&#128722;</span>
+        <span class="proj-card-label">Freelance</span>
+        <h4>Zartaj Online</h4>
+        <p>Full-featured online shopping platform with product catalog, cart, checkout, and order management.</p>
+        <div class="proj-card-tech">
+          <span class="proj-card-tag">Python</span>
+          <span class="proj-card-tag">Django</span>
+          <span class="proj-card-tag">SQLite3</span>
+        </div>
+      </div>
+
+      <div class="proj-card">
+        <span class="proj-card-icon">&#127860;</span>
+        <span class="proj-card-label">Freelance</span>
+        <h4>Restaurant 365</h4>
+        <p>Restaurant management system covering operations, orders, and day-to-day business workflows.</p>
+        <div class="proj-card-tech">
+          <span class="proj-card-tag">Python</span>
+          <span class="proj-card-tag">Django</span>
+          <span class="proj-card-tag">SQLite3</span>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -816,6 +990,16 @@ const observer = new IntersectionObserver((entries) => {
 }, { threshold: 0.15 });
 
 document.querySelectorAll('.section, .stats-bar').forEach(el => observer.observe(el));
+
+// Show CTA bar after portfolio is visible and user scrolls a bit
+const ctaBar = document.getElementById('ctaBar');
+window.addEventListener('scroll', () => {
+  if (animationDone && window.scrollY > 300) {
+    ctaBar.classList.add('visible');
+  } else {
+    ctaBar.classList.remove('visible');
+  }
+});
 
 // ─── PARTICLE BACKGROUND ───
 (function() {
