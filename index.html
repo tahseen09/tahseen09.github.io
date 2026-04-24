@@ -4918,12 +4918,26 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
     // No receipt on decline — the paper stays in the roll.
   }
 
+  // Scroll so the terminal + the space above it (where the receipt
+  // will emerge) both fit in view. Called at scenario start so visitors
+  // never have to chase the action.
+  function scrollTerminalIntoFocus() {
+    if (!pay.device) return;
+    const vh = window.innerHeight || 800;
+    // Reserve ~35% of viewport above the terminal for the receipt.
+    const gap = Math.min(400, Math.max(180, vh * 0.35));
+    const rect = pay.device.getBoundingClientRect();
+    const target = rect.top + (window.scrollY || window.pageYOffset) - gap;
+    window.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
+  }
+
   async function run(scenario) {
     if (running) return;
     running = true;
     buttons.forEach(b => b.disabled = true);
     clearReceipt();
     showLive();
+    scrollTerminalIntoFocus();
     try {
       if (scenario === 'approve') {
         await runApprove();
