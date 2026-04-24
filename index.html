@@ -1629,35 +1629,6 @@
     </div>
   </div>
 
-  <!-- AI Match Engine -->
-  <div class="section" id="sectionMatch">
-    <div class="section-label"># ai_match</div>
-    <div class="section-title" data-brag="paste the JD. I'll match myself to it. I dare you.">Hiring? Drop your JD and I'll match myself to it</div>
-    <p style="color:var(--muted); font-size:0.95rem; margin-bottom:20px; line-height:1.6;">
-      Built-in recruiter tool. Paste the job description → I tokenize it, score it against my actual skills &amp; shipped work, rank my most relevant accomplishments, and draft an opening line you can copy. Runs entirely in your browser — no black-box API, every citation is traceable back to a bullet on this page.
-    </p>
-
-    <div class="match-box">
-      <textarea id="jdInput" class="match-input" rows="6" placeholder="Paste the role description here… (or click 'try a sample JD' below)" spellcheck="false"></textarea>
-      <div class="match-actions">
-        <button id="matchBtn" class="match-btn primary" type="button">
-          <span class="match-btn-icon">🧠</span>
-          <span class="match-btn-text">analyze</span>
-        </button>
-        <button id="matchSampleBtn" class="match-btn" type="button">try a sample JD</button>
-        <button id="matchClearBtn" class="match-btn ghost" type="button">clear</button>
-        <span class="match-meta">powered by on-device token matching · zero data leaves your tab</span>
-      </div>
-
-      <div class="match-thinking" id="matchThinking">
-        <div class="match-thinking-dots"><span></span><span></span><span></span></div>
-        <div class="match-thinking-text" id="matchThinkingText">tokenizing…</div>
-      </div>
-
-      <div class="match-results" id="matchResults"></div>
-    </div>
-  </div>
-
   <!-- Experience -->
   <div class="section" id="sectionExp">
     <div class="section-label"># experience</div>
@@ -1863,6 +1834,35 @@
       <div class="edu-degree">B.Tech &mdash; Computer Science &amp; Engineering</div>
       <div class="edu-school">Indira Gandhi Institute of Technology</div>
       <div class="edu-year">2016 &mdash; 2020</div>
+    </div>
+  </div>
+
+  <!-- AI Match Engine -->
+  <div class="section" id="sectionMatch">
+    <div class="section-label"># ai_match</div>
+    <div class="section-title" data-brag="paste the JD. I'll match myself to it. I dare you.">Hiring? Drop your JD and I'll match myself to it</div>
+    <p style="color:var(--muted); font-size:0.95rem; margin-bottom:20px; line-height:1.6;">
+      Built-in recruiter tool. Paste the job description → I tokenize it, score it against my actual skills &amp; shipped work, rank my most relevant accomplishments, and draft an opening line you can copy. Runs entirely in your browser — no black-box API, every citation is traceable back to a bullet on this page.
+    </p>
+
+    <div class="match-box">
+      <textarea id="jdInput" class="match-input" rows="6" placeholder="Paste the role description here… (or click 'try a sample JD' below)" spellcheck="false"></textarea>
+      <div class="match-actions">
+        <button id="matchBtn" class="match-btn primary" type="button">
+          <span class="match-btn-icon">🧠</span>
+          <span class="match-btn-text">analyze</span>
+        </button>
+        <button id="matchSampleBtn" class="match-btn" type="button">try a sample JD</button>
+        <button id="matchClearBtn" class="match-btn ghost" type="button">clear</button>
+        <span class="match-meta">powered by on-device token matching · zero data leaves your tab</span>
+      </div>
+
+      <div class="match-thinking" id="matchThinking">
+        <div class="match-thinking-dots"><span></span><span></span><span></span></div>
+        <div class="match-thinking-text" id="matchThinkingText">tokenizing…</div>
+      </div>
+
+      <div class="match-results" id="matchResults"></div>
     </div>
   </div>
 
