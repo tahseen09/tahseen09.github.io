@@ -935,6 +935,23 @@
   .signoff-line.out.muted { color: #484f58; font-style: italic; }
   .signoff-line.signoff-hint { display: none; padding-left: 2px; }
   .signoff-line.signoff-hint.show { display: block; }
+  .signoff-hint-btn {
+    font-family: inherit;
+    font-size: inherit;
+    font-style: italic;
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed rgba(255, 154, 108, 0.5);
+    color: #ff9a6c;
+    padding: 0 2px;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s, text-shadow 0.2s;
+  }
+  .signoff-hint-btn:hover {
+    color: #f85149;
+    border-bottom-color: #f85149;
+    text-shadow: 0 0 8px rgba(248,81,73,0.4);
+  }
   .signoff-prompt { color: var(--green); margin-right: 8px; }
   .signoff-cmd { color: #c9d1d9; }
   .signoff-cursor {
@@ -1925,7 +1942,7 @@
     <div class="signoff-body">
       <div class="signoff-line" data-prompt="$" data-cmd="cat ~/.thanks"></div>
       <div class="signoff-line out">thanks for reading. made it this far? that means something — send a line.</div>
-      <div class="signoff-line out muted signoff-hint" id="signoffHint">ps: you didn't try 😤 brag mode, did you?</div>
+      <div class="signoff-line out muted signoff-hint" id="signoffHint">ps: you didn't try <button type="button" class="signoff-hint-btn" id="signoffBragBtn">😤 brag mode</button>, did you?</div>
       <div class="signoff-line" data-prompt="$" data-cmd="logout"></div>
       <div class="signoff-line out muted">Connection to tahseen-rahman closed.</div>
       <div class="signoff-line prompt-only"><span class="signoff-prompt">$</span><span class="signoff-cursor"></span></div>
@@ -3923,6 +3940,11 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
         const hint = document.getElementById('signoffHint');
         const bragSeen = (window.BRAG && window.BRAG.isActive()) || document.body.classList.contains('brag-ever');
         if (hint && !bragSeen) hint.classList.add('show');
+        const hintBtn = document.getElementById('signoffBragBtn');
+        if (hintBtn) hintBtn.addEventListener('click', () => {
+          if (window.BRAG) window.BRAG.setActive(true);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
         box.classList.add('visible');
         play();
         obs.disconnect();
