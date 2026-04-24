@@ -356,11 +356,14 @@
   .terminal-phase {
     min-height: 100vh;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 14px;
     padding: 24px;
     position: relative;
   }
+  .terminal-phase .terminal { width: 100%; max-width: 720px; }
 
   .terminal {
     background: var(--terminal-bg);
