@@ -1367,10 +1367,10 @@
 
   .pay-device {
     position: relative;
-    width: 300px;
+    width: 340px;
     background: linear-gradient(155deg, #2a2f38 0%, #1b1f27 55%, #14171e 100%);
     border-radius: 28px;
-    padding: 18px 16px 20px;
+    padding: 16px 14px 22px;
     box-shadow:
       0 30px 60px rgba(0,0,0,0.55),
       0 0 0 1px rgba(255,255,255,0.04),
@@ -1380,7 +1380,7 @@
     overflow: visible;
   }
   @media (max-width: 420px) {
-    .pay-device { width: 90%; max-width: 320px; }
+    .pay-device { width: 92%; max-width: 340px; }
   }
   /* Subtle brand strip at the bottom */
   .pay-device::after {
@@ -1414,26 +1414,28 @@
   /* The receipt paper that extrudes upward from the slot */
   .pay-receipt-out {
     position: absolute;
-    bottom: calc(100% - 2px); /* receipt grows above the slot */
+    bottom: calc(100% - 2px);
     left: 50%;
     transform: translateX(-50%);
-    width: 280px;
+    width: 232px; /* fits within the 70%-width slot */
     pointer-events: none;
     z-index: 5;
   }
 
-  /* LCD screen — now the whole terminal body */
+  /* LCD screen — consistent zones (head / body / foot) */
   .pay-screen {
     background: #06080c;
     border: 1px solid #000;
     border-radius: 12px;
-    padding: 16px 16px 20px;
-    margin-top: 8px;
+    padding: 0;
+    margin-top: 10px;
     font-family: var(--font-mono);
     box-shadow:
       inset 0 2px 8px rgba(0,0,0,0.9),
       inset 0 0 0 1px rgba(255,255,255,0.03);
-    min-height: 260px;
+    display: flex;
+    flex-direction: column;
+    min-height: 340px;
     position: relative;
     overflow: hidden;
   }
@@ -1449,23 +1451,61 @@
       transparent 4px
     );
     pointer-events: none;
+    z-index: 1;
+  }
+  .pay-screen > * { position: relative; z-index: 2; }
+
+  /* Header strip */
+  .pay-screen-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px 10px;
+    gap: 10px;
   }
   .pay-screen-brand {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.64rem;
+    font-size: 0.66rem;
     font-weight: 700;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.22em;
     color: #39d2c0;
     opacity: 0.85;
-    margin-bottom: 8px;
   }
-  .pay-screen-sig {
-    margin-left: auto;
-    color: rgba(57,210,192,0.4);
+  .pay-screen-chip {
     font-size: 0.58rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    color: #a8e4cf;
+    background: rgba(57,210,192,0.12);
+    border: 1px solid rgba(57,210,192,0.3);
+    padding: 3px 8px;
+    border-radius: 3px;
+    transition: all 0.25s;
   }
+  .pay-screen.busy .pay-screen-chip {
+    color: #ffe9b8;
+    background: rgba(210,153,34,0.14);
+    border-color: rgba(210,153,34,0.45);
+    animation: chipPulse 1s ease-in-out infinite;
+  }
+  .pay-screen.ok .pay-screen-chip {
+    color: #bff2c0;
+    background: rgba(63,185,80,0.15);
+    border-color: rgba(63,185,80,0.5);
+  }
+  .pay-screen.fail .pay-screen-chip {
+    color: #ffcfcb;
+    background: rgba(248,81,73,0.15);
+    border-color: rgba(248,81,73,0.5);
+    animation: chipPulse 0.6s ease-in-out infinite;
+  }
+  @keyframes chipPulse {
+    0%,100% { opacity: 0.75; }
+    50% { opacity: 1; }
+  }
+
   .pay-led {
     width: 7px; height: 7px; border-radius: 50%;
     background: #3fb950;
@@ -1477,62 +1517,115 @@
     50% { opacity: 1; }
   }
   .pay-screen.busy .pay-led { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); animation-duration: 0.6s; }
-  .pay-screen.ok .pay-led    { background: var(--green); box-shadow: 0 0 10px var(--green); }
-  .pay-screen.fail .pay-led  { background: var(--red); box-shadow: 0 0 10px var(--red); animation-duration: 0.4s; }
+  .pay-screen.ok .pay-led   { background: var(--green); box-shadow: 0 0 10px var(--green); }
+  .pay-screen.fail .pay-led { background: var(--red);   box-shadow: 0 0 10px var(--red); animation-duration: 0.4s; }
+
+  /* Divider inside screen */
+  .pay-screen-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(57,210,192,0.22), transparent);
+    margin: 0 10px;
+  }
+
+  /* Body (idle or live) */
+  .pay-screen-body {
+    flex: 1;
+    padding: 14px 14px 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 230px;
+  }
 
   .pay-screen-amount {
-    font-size: 2rem;
+    font-size: 2.2rem;
     font-weight: 700;
     color: #e8fff9;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.01em;
     text-shadow: 0 0 18px rgba(57,210,192,0.35);
-    margin-bottom: 8px;
+    text-align: center;
+    margin-bottom: 14px;
+    font-variant-numeric: tabular-nums;
+    animation: amountIn 0.35s cubic-bezier(.2,.9,.3,1.3);
+  }
+  @keyframes amountIn {
+    from { opacity: 0; transform: translateY(6px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
   }
   .pay-screen.ok .pay-screen-amount { color: #b7ffc6; text-shadow: 0 0 18px rgba(63,185,80,0.5); }
   .pay-screen.fail .pay-screen-amount { color: #ffb5b1; text-shadow: 0 0 18px rgba(248,81,73,0.5); }
 
   .pay-screen-status {
-    font-size: 0.82rem;
+    font-size: 0.84rem;
     font-weight: 700;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.14em;
     color: #39d2c0;
-    min-height: 1.2em;
+    min-height: 1.3em;
+    text-align: center;
     transition: color 0.2s;
   }
   .pay-screen.ok .pay-screen-status  { color: #3fb950; }
   .pay-screen.fail .pay-screen-status { color: #f85149; }
 
   .pay-screen-sub {
-    font-size: 0.7rem;
-    color: rgba(255,255,255,0.45);
-    min-height: 1em;
-    margin-top: 2px;
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.55);
+    min-height: 1.2em;
+    margin-top: 4px;
     letter-spacing: 0.05em;
+    text-align: center;
   }
 
-  .pay-screen-code {
-    margin-top: 8px;
-    font-size: 0.64rem;
-    color: rgba(57,210,192,0.55);
-    font-family: var(--font-mono);
-    letter-spacing: 0.04em;
-    min-height: 1em;
-    white-space: pre-wrap;
+  /* Footer — always reserved, shows hint or raw code */
+  .pay-screen-foot {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 8px 14px 12px;
+    min-height: 34px;
+  }
+  .pay-screen-foot-label {
+    flex-shrink: 0;
+    font-size: 0.56rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    color: rgba(57,210,192,0.45);
+    padding: 2px 6px;
+    border: 1px solid rgba(57,210,192,0.2);
+    border-radius: 3px;
+  }
+  .pay-screen.busy .pay-screen-foot-label { color: rgba(210,153,34,0.6); border-color: rgba(210,153,34,0.3); }
+  .pay-screen.ok .pay-screen-foot-label   { color: rgba(63,185,80,0.7);  border-color: rgba(63,185,80,0.4); }
+  .pay-screen.fail .pay-screen-foot-label { color: rgba(248,81,73,0.7);  border-color: rgba(248,81,73,0.4); }
+
+  .pay-screen-foot-value {
+    font-size: 0.62rem;
+    color: rgba(255,255,255,0.42);
+    letter-spacing: 0.03em;
+    line-height: 1.35;
     word-break: break-all;
   }
-  .pay-screen.ok .pay-screen-code  { color: rgba(63,185,80,0.75); }
-  .pay-screen.fail .pay-screen-code { color: rgba(248,81,73,0.75); }
+  .pay-screen.ok .pay-screen-foot-value   { color: rgba(63,185,80,0.75); }
+  .pay-screen.fail .pay-screen-foot-value { color: rgba(248,81,73,0.75); }
+  .pay-screen.busy .pay-screen-foot-value { color: rgba(210,153,34,0.75); }
 
   /* Idle-panel action buttons (inside the screen) */
   .pay-screen-idle {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin-top: 2px;
+    gap: 7px;
+    animation: panelIn 0.3s ease;
+  }
+  .pay-screen-live {
+    animation: panelIn 0.3s ease;
+  }
+  @keyframes panelIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
   .pay-screen-prompt {
-    font-size: 0.66rem;
-    letter-spacing: 0.2em;
+    font-size: 0.58rem;
+    letter-spacing: 0.22em;
     color: rgba(57,210,192,0.55);
     text-align: center;
     margin-bottom: 4px;
@@ -2440,47 +2533,60 @@
         <div class="pay-receipt-out" id="payReceiptOut" aria-hidden="true"></div>
 
         <div class="pay-screen" id="payScreen">
-          <div class="pay-screen-brand">
-            <span class="pay-led" id="payLed"></span>
-            <span>TEYA · POS</span>
-            <span class="pay-screen-sig" id="paySig">v5</span>
+          <!-- Always-visible header strip -->
+          <div class="pay-screen-head">
+            <div class="pay-screen-brand">
+              <span class="pay-led" id="payLed"></span>
+              <span>TEYA · POS</span>
+            </div>
+            <div class="pay-screen-chip" id="payChip">READY</div>
           </div>
 
-          <!-- Idle panel: the three action buttons live inside the screen -->
-          <div class="pay-screen-idle" id="payIdle">
-            <div class="pay-screen-prompt">choose a scenario</div>
-            <button class="pay-action approve" data-scenario="approve" type="button">
-              <span class="pay-action-icon">💳</span>
-              <span class="pay-action-body">
-                <span class="pay-action-label">tap to pay</span>
-                <span class="pay-action-sub">€4.20 · local card</span>
-              </span>
-              <span class="pay-action-arrow">→</span>
-            </button>
-            <button class="pay-action dcc" data-scenario="dcc" type="button">
-              <span class="pay-action-icon">🌍</span>
-              <span class="pay-action-body">
-                <span class="pay-action-label">foreign card</span>
-                <span class="pay-action-sub">DCC · USD ⇄ EUR</span>
-              </span>
-              <span class="pay-action-arrow">→</span>
-            </button>
-            <button class="pay-action decline" data-scenario="decline" type="button">
-              <span class="pay-action-icon">⚠️</span>
-              <span class="pay-action-body">
-                <span class="pay-action-label">decline + reversal</span>
-                <span class="pay-action-sub">high-ticket · auto-retry</span>
-              </span>
-              <span class="pay-action-arrow">→</span>
-            </button>
+          <div class="pay-screen-divider"></div>
+
+          <!-- Body: swaps between idle (buttons) and live (amount + status) -->
+          <div class="pay-screen-body">
+            <div class="pay-screen-idle" id="payIdle">
+              <div class="pay-screen-prompt">choose a scenario</div>
+              <button class="pay-action approve" data-scenario="approve" type="button">
+                <span class="pay-action-icon">💳</span>
+                <span class="pay-action-body">
+                  <span class="pay-action-label">tap to pay</span>
+                  <span class="pay-action-sub">€4.20 · local card</span>
+                </span>
+                <span class="pay-action-arrow">›</span>
+              </button>
+              <button class="pay-action dcc" data-scenario="dcc" type="button">
+                <span class="pay-action-icon">🌍</span>
+                <span class="pay-action-body">
+                  <span class="pay-action-label">foreign card</span>
+                  <span class="pay-action-sub">DCC · USD ⇄ EUR</span>
+                </span>
+                <span class="pay-action-arrow">›</span>
+              </button>
+              <button class="pay-action decline" data-scenario="decline" type="button">
+                <span class="pay-action-icon">⚠️</span>
+                <span class="pay-action-body">
+                  <span class="pay-action-label">decline + reversal</span>
+                  <span class="pay-action-sub">high-ticket · auto-retry</span>
+                </span>
+                <span class="pay-action-arrow">›</span>
+              </button>
+            </div>
+
+            <div class="pay-screen-live" id="payLive" hidden>
+              <div class="pay-screen-amount" id="payAmount">€ 0.00</div>
+              <div class="pay-screen-status" id="payStatus">READY</div>
+              <div class="pay-screen-sub" id="paySub">pick a scenario</div>
+            </div>
           </div>
 
-          <!-- Live panel: amount + status + raw code during the run -->
-          <div class="pay-screen-live" id="payLive" hidden>
-            <div class="pay-screen-amount" id="payAmount">€ 0.00</div>
-            <div class="pay-screen-status" id="payStatus">READY</div>
-            <div class="pay-screen-sub" id="paySub">pick a scenario</div>
-            <div class="pay-screen-code" id="payCode"></div>
+          <div class="pay-screen-divider"></div>
+
+          <!-- Footer: always reserved — idle hint or live raw code -->
+          <div class="pay-screen-foot">
+            <span class="pay-screen-foot-label" id="payFootLabel">HINT</span>
+            <span class="pay-screen-foot-value" id="payCode">open the network flow below for the full ISO 8583 log</span>
           </div>
         </div>
       </div>
@@ -4424,21 +4530,27 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
 
   // ── Terminal screen state ────────────────────────────────
   const pay = {
-    device: document.getElementById('payDevice'),
-    screen: document.getElementById('payScreen'),
-    amount: document.getElementById('payAmount'),
-    idle:   document.getElementById('payIdle'),
-    live:   document.getElementById('payLive'),
-    status: document.getElementById('payStatus'),
-    sub:    document.getElementById('paySub'),
-    code:   document.getElementById('payCode'),
+    device:    document.getElementById('payDevice'),
+    screen:    document.getElementById('payScreen'),
+    chip:      document.getElementById('payChip'),
+    amount:    document.getElementById('payAmount'),
+    idle:      document.getElementById('payIdle'),
+    live:      document.getElementById('payLive'),
+    status:    document.getElementById('payStatus'),
+    sub:       document.getElementById('paySub'),
+    footLabel: document.getElementById('payFootLabel'),
+    code:      document.getElementById('payCode'),
   };
-  function setScreen({ status, sub, code }) {
+  function setScreen({ status, sub, code, foot }) {
     if (status !== undefined && pay.status) pay.status.textContent = status;
     if (sub !== undefined && pay.sub) pay.sub.textContent = sub;
-    if (code !== undefined && pay.code) pay.code.textContent = code;
+    if (code !== undefined && pay.code) {
+      pay.code.textContent = code;
+      if (pay.footLabel) pay.footLabel.textContent = foot || (code ? 'MTI' : 'HINT');
+    }
   }
   function setAmount(amt) { if (pay.amount) pay.amount.textContent = amt; }
+  const CHIP_LABELS = { ready: 'READY', busy: 'BUSY', ok: 'APPROVED', fail: 'DECLINED' };
   function setPayState(state) {
     if (!pay.screen) return;
     pay.screen.classList.remove('busy', 'ok', 'fail');
@@ -4446,6 +4558,7 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
     if (state === 'busy')  { pay.screen.classList.add('busy');  pay.device && pay.device.classList.add('running'); }
     if (state === 'ok')    { pay.screen.classList.add('ok');    pay.device && pay.device.classList.add('ok'); }
     if (state === 'fail')  { pay.screen.classList.add('fail');  pay.device && pay.device.classList.add('fail'); }
+    if (pay.chip) pay.chip.textContent = CHIP_LABELS[state] || 'READY';
   }
   function showIdle() {
     if (pay.idle) pay.idle.hidden = false;
@@ -4457,7 +4570,12 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
   }
   function resetScreen() {
     setAmount('€ 0.00');
-    setScreen({ status: 'READY', sub: 'pick a scenario', code: '' });
+    setScreen({
+      status: 'READY',
+      sub: 'pick a scenario',
+      code: 'open the network flow below for the full ISO 8583 log',
+      foot: 'HINT',
+    });
     setPayState('ready');
     showIdle();
   }
