@@ -41,6 +41,130 @@
     overflow-x: hidden;
   }
 
+  /* Ambient animated gradient aura */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: -20%;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(600px circle at var(--mx, 50%) var(--my, 30%), rgba(88,166,255,0.14), transparent 50%),
+      radial-gradient(500px circle at calc(var(--mx, 50%) + 20%) calc(var(--my, 30%) + 30%), rgba(188,140,255,0.08), transparent 50%),
+      radial-gradient(700px circle at calc(var(--mx, 50%) - 20%) calc(var(--my, 30%) + 10%), rgba(57,210,192,0.08), transparent 50%);
+    transition: background 0.2s;
+  }
+
+  /* ─── SCROLL PROGRESS BAR ─── */
+  #scrollProgress {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    width: 0%;
+    background: linear-gradient(90deg, #58a6ff, #39d2c0, #bc8cff);
+    background-size: 200% 100%;
+    z-index: 100;
+    box-shadow: 0 0 12px rgba(88,166,255,0.6);
+    animation: shimmer 3s linear infinite;
+    transition: width 0.05s linear;
+  }
+  @keyframes shimmer {
+    0% { background-position: 0% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  /* ─── CUSTOM CURSOR ─── */
+  #cursorDot, #cursorRing {
+    position: fixed;
+    top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9999;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    mix-blend-mode: screen;
+  }
+  #cursorDot {
+    width: 6px; height: 6px;
+    background: #58a6ff;
+    box-shadow: 0 0 12px #58a6ff;
+    transition: transform 0.1s ease-out, background 0.2s;
+  }
+  #cursorRing {
+    width: 36px; height: 36px;
+    border: 1.5px solid rgba(88,166,255,0.5);
+    transition: transform 0.18s ease-out, width 0.2s, height 0.2s, border-color 0.2s, background 0.2s;
+  }
+  #cursorRing.hover {
+    width: 60px; height: 60px;
+    border-color: rgba(57,210,192,0.9);
+    background: rgba(57,210,192,0.08);
+  }
+  #cursorRing.click {
+    transform: translate(-50%, -50%) scale(0.6);
+    background: rgba(188,140,255,0.2);
+  }
+  @media (hover: none) {
+    #cursorDot, #cursorRing { display: none; }
+  }
+
+  /* ─── CLICK RIPPLE ─── */
+  .ripple {
+    position: fixed;
+    pointer-events: none;
+    border-radius: 50%;
+    border: 2px solid #58a6ff;
+    transform: translate(-50%, -50%);
+    animation: ripple 0.7s ease-out forwards;
+    z-index: 9998;
+  }
+  @keyframes ripple {
+    0% { width: 0; height: 0; opacity: 0.8; }
+    100% { width: 140px; height: 140px; opacity: 0; }
+  }
+
+  /* ─── TOAST ─── */
+  #toast {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-80px);
+    background: rgba(13,17,23,0.95);
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    padding: 10px 20px;
+    border-radius: 8px;
+    z-index: 200;
+    box-shadow: 0 8px 32px rgba(57,210,192,0.3);
+    transition: transform 0.4s cubic-bezier(.2,.9,.3,1.3);
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ─── MATRIX RAIN ─── */
+  #matrix {
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  #matrix.on { opacity: 1; pointer-events: auto; }
+
+  /* screen shake */
+  @keyframes shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+    40%, 60% { transform: translate3d(4px, 0, 0); }
+  }
+  body.shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+
+  /* rainbow mode */
+  body.rainbow { animation: hue 6s linear infinite; }
+  @keyframes hue { to { filter: hue-rotate(360deg); } }
+
   /* ─── PARTICLE CANVAS ─── */
   #particles {
     position: fixed;
@@ -104,6 +228,89 @@
     font-size: 0.88rem;
     line-height: 1.7;
     min-height: 260px;
+    max-height: 60vh;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+  }
+  .terminal-body::-webkit-scrollbar { width: 8px; }
+  .terminal-body::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+  .terminal-body::-webkit-scrollbar-track { background: transparent; }
+
+  /* ── REPL ── */
+  .repl-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .repl-prompt {
+    color: var(--magenta);
+    flex-shrink: 0;
+    user-select: none;
+  }
+  .repl-input {
+    flex: 1;
+    outline: none;
+    color: var(--white);
+    caret-color: var(--green);
+    min-height: 1.4em;
+    word-break: break-word;
+    white-space: pre-wrap;
+  }
+  .repl-input[contenteditable="false"] {
+    caret-color: transparent;
+    color: #c9d1d9;
+  }
+  .repl-out {
+    color: #b1bac4;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .repl-err {
+    color: var(--red);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .repl-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .repl-status.ready { color: var(--green); }
+  .repl-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--yellow);
+    animation: pulseDot 1.2s ease-in-out infinite;
+  }
+  .repl-status.ready .repl-dot {
+    background: var(--green);
+    animation: none;
+    box-shadow: 0 0 8px var(--green);
+  }
+  @keyframes pulseDot {
+    0%, 100% { opacity: 0.4; transform: scale(0.9); }
+    50% { opacity: 1; transform: scale(1.1); }
+  }
+
+  .open-portfolio-btn {
+    margin-top: 16px;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--blue);
+    background: transparent;
+    border: 1px solid var(--card-border);
+    padding: 10px 22px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .open-portfolio-btn:hover {
+    border-color: var(--blue);
+    background: rgba(88,166,255,0.08);
+    box-shadow: 0 4px 16px rgba(88,166,255,0.15);
+    transform: translateY(-2px);
   }
 
   .line { opacity: 0; transform: translateY(4px); }
@@ -145,6 +352,7 @@
   .hero {
     text-align: center;
     padding: 20px 0 60px;
+    perspective: 800px;
   }
   .hero-pill {
     display: inline-block;
@@ -157,6 +365,27 @@
     padding: 6px 16px;
     border-radius: 20px;
     margin-bottom: 24px;
+    animation: float 4s ease-in-out infinite;
+  }
+  .hero-pill::before {
+    content: '';
+    display: inline-block;
+    width: 7px; height: 7px;
+    background: var(--green);
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+    box-shadow: 0 0 0 0 rgba(63,185,80,0.7);
+    animation: pulse 1.8s ease-out infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(63,185,80,0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(63,185,80,0); }
+    100% { box-shadow: 0 0 0 0 rgba(63,185,80,0); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
   }
   .hero h1 {
     font-size: clamp(2.2rem, 6vw, 3.8rem);
@@ -164,10 +393,24 @@
     letter-spacing: -0.03em;
     line-height: 1.1;
     margin-bottom: 16px;
-    background: linear-gradient(135deg, #fff 0%, #58a6ff 50%, #39d2c0 100%);
+    background: linear-gradient(135deg, #fff 0%, #58a6ff 30%, #39d2c0 60%, #bc8cff 100%);
+    background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    animation: gradientShift 8s linear infinite;
+    cursor: pointer;
+    user-select: none;
+  }
+  @keyframes gradientShift {
+    to { background-position: 200% center; }
+  }
+  .hero h1 .char {
+    display: inline-block;
+    transition: transform 0.3s cubic-bezier(.2,.9,.3,1.3), color 0.3s;
+  }
+  .hero h1 .char:hover {
+    transform: translateY(-8px) scale(1.15) rotate(-5deg);
   }
   .hero p {
     font-size: 1.15rem;
@@ -258,6 +501,24 @@
     border-radius: 10px;
     padding: 20px;
     text-align: center;
+    transition: transform 0.3s, border-color 0.2s, box-shadow 0.3s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent, rgba(57,210,192,0.08), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.6s;
+  }
+  .stat-card:hover::before { transform: translateX(100%); }
+  .stat-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--cyan);
+    box-shadow: 0 12px 32px rgba(57,210,192,0.15);
   }
   .stat-value {
     font-family: var(--font-mono);
@@ -273,6 +534,10 @@
   }
 
   /* Experience cards */
+  .exp-card, .proj-card, .stat-card, .edu-card {
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
   .exp-card {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
@@ -280,10 +545,22 @@
     padding: 28px;
     margin-bottom: 16px;
     position: relative;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, box-shadow 0.3s, transform 0.1s;
+    overflow: hidden;
   }
+  .exp-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(400px circle at var(--lx, -100px) var(--ly, -100px), rgba(88,166,255,0.1), transparent 40%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .exp-card:hover::after { opacity: 1; }
   .exp-card:hover {
-    border-color: #30363d;
+    border-color: var(--blue);
+    box-shadow: 0 20px 60px rgba(88,166,255,0.15);
   }
   .exp-card.current {
     border-color: rgba(63,185,80,0.3);
@@ -375,7 +652,14 @@
     border-color: var(--cyan);
     color: var(--cyan);
     background: rgba(57,210,192,0.06);
-    transform: translateY(-2px);
+    transform: translateY(-4px) rotate(-2deg) scale(1.05);
+    box-shadow: 0 8px 20px rgba(57,210,192,0.2);
+  }
+  .skill-tag:active { animation: wobble 0.5s; }
+  @keyframes wobble {
+    0%, 100% { transform: translateY(-4px) rotate(0); }
+    25% { transform: translateY(-6px) rotate(-8deg) scale(1.1); }
+    75% { transform: translateY(-4px) rotate(6deg) scale(1.08); }
   }
   .skill-tag.primary {
     border-color: rgba(88,166,255,0.3);
@@ -596,6 +880,165 @@
     border-color: var(--blue);
   }
 
+  /* ── Payment Simulator ── */
+  .sim-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .sim-btn {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--card-border);
+    background: var(--card-bg);
+    color: var(--white);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .sim-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .sim-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .sim-btn.sim-approve:hover { border-color: var(--green); color: var(--green); background: rgba(63,185,80,0.08); }
+  .sim-btn.sim-dcc:hover { border-color: var(--yellow); color: var(--yellow); background: rgba(210,153,34,0.08); }
+  .sim-btn.sim-decline:hover { border-color: var(--red); color: var(--red); background: rgba(248,81,73,0.08); }
+
+  .sim-pipeline {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 24px;
+    padding: 24px 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    overflow-x: auto;
+  }
+  .sim-node {
+    flex: 0 0 auto;
+    min-width: 88px;
+    text-align: center;
+    padding: 14px 10px;
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    background: rgba(13,17,23,0.6);
+    transition: all 0.3s;
+    position: relative;
+  }
+  .sim-node.active {
+    border-color: var(--cyan);
+    background: rgba(57,210,192,0.08);
+    box-shadow: 0 0 24px rgba(57,210,192,0.3);
+    transform: translateY(-4px);
+  }
+  .sim-node.ok {
+    border-color: var(--green);
+    background: rgba(63,185,80,0.08);
+  }
+  .sim-node.fail {
+    border-color: var(--red);
+    background: rgba(248,81,73,0.08);
+    animation: shake 0.4s;
+  }
+  .sim-node-icon { font-size: 1.6rem; margin-bottom: 4px; }
+  .sim-node-label { font-size: 0.82rem; font-weight: 700; color: var(--white); }
+  .sim-node-sub { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
+
+  .sim-edge {
+    flex: 1;
+    min-width: 30px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--card-border), transparent);
+    position: relative;
+  }
+  .sim-edge.active {
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  }
+  .sim-packet {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 12px var(--cyan);
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
+  .sim-edge.flowing .sim-packet {
+    animation: packetFly 0.9s cubic-bezier(.5,.05,.5,.95) forwards;
+  }
+  .sim-edge.reverse.flowing .sim-packet {
+    animation: packetFlyReverse 0.9s cubic-bezier(.5,.05,.5,.95) forwards;
+    background: var(--green);
+    box-shadow: 0 0 12px var(--green);
+  }
+  .sim-edge.fail.flowing .sim-packet {
+    background: var(--red);
+    box-shadow: 0 0 12px var(--red);
+  }
+  @keyframes packetFly {
+    0% { left: 0%; opacity: 0; transform: translate(-50%, -50%) scale(0); }
+    20% { opacity: 1; transform: translate(-50%, -50%) scale(1.4); }
+    100% { left: 100%; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
+  @keyframes packetFlyReverse {
+    0% { left: 100%; opacity: 0; transform: translate(-50%, -50%) scale(0); }
+    20% { opacity: 1; transform: translate(-50%, -50%) scale(1.4); }
+    100% { left: 0%; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
+
+  .sim-log {
+    background: var(--terminal-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    padding: 18px 20px;
+    min-height: 160px;
+    max-height: 380px;
+    overflow-y: auto;
+    line-height: 1.7;
+  }
+  .sim-log::-webkit-scrollbar { width: 8px; }
+  .sim-log::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+  .sim-log-empty { color: var(--muted); text-align: center; padding: 32px 0; }
+  .sim-log-entry {
+    opacity: 0;
+    transform: translateY(4px);
+    animation: logIn 0.3s forwards;
+    padding: 4px 0;
+    border-bottom: 1px dashed rgba(125,133,144,0.1);
+  }
+  .sim-log-entry:last-child { border-bottom: none; }
+  @keyframes logIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .sim-log-head {
+    color: var(--cyan);
+    font-weight: 600;
+    margin-top: 8px;
+  }
+  .sim-log-entry .k { color: var(--yellow); }
+  .sim-log-entry .v { color: var(--white); }
+  .sim-log-entry .c { color: var(--muted); }
+  .sim-log-entry.ok .k { color: var(--green); }
+  .sim-log-entry.err .k { color: var(--red); }
+
+  @media (max-width: 640px) {
+    .sim-node { min-width: 68px; padding: 10px 6px; }
+    .sim-node-icon { font-size: 1.3rem; }
+    .sim-node-label { font-size: 0.72rem; }
+    .sim-node-sub { font-size: 0.6rem; }
+    .sim-log { font-size: 0.72rem; }
+  }
+
   /* Responsive */
   @media (max-width: 640px) {
     .terminal-body { padding: 16px; font-size: 0.78rem; }
@@ -611,6 +1054,11 @@
 <body>
 
 <canvas id="particles"></canvas>
+<canvas id="matrix"></canvas>
+<div id="scrollProgress"></div>
+<div id="cursorRing"></div>
+<div id="cursorDot"></div>
+<div id="toast"></div>
 
 <!-- Sticky CTA -->
 <div class="cta-bar" id="ctaBar">
@@ -639,7 +1087,7 @@
   <!-- Hero -->
   <div class="hero">
     <div class="hero-pill">v5.0.0 &middot; actively maintained</div>
-    <h1>Tahseen Rahman</h1>
+    <h1 id="heroName" data-text="Tahseen Rahman"></h1>
     <p>Software engineer with 5+ years building scalable backend systems in payment infrastructure and AI. Currently powering real-money transactions at Teya.</p>
     <div class="hero-links">
       <a class="hero-link primary" href="https://tahseenrahman.notion.site/Tahseen-Rahman-Resume-ae01040ae55f469b919d95963b1171b6" target="_blank">
@@ -744,6 +1192,57 @@
         <li>Analytics dashboard with Elastic Stack for chatbot metrics</li>
         <li>Organization management tool with role-based permissions</li>
       </ul>
+    </div>
+  </div>
+
+  <!-- Payment Simulator -->
+  <div class="section" id="sectionSim">
+    <div class="section-label"># transactions</div>
+    <div class="section-title">Watch a card payment flow — the thing I actually build</div>
+    <p style="color:var(--muted); font-size:0.95rem; margin-bottom:20px; line-height:1.6;">
+      This is a real-ish simulation of the payment rails Teya connects to. Click a scenario and watch an ISO 8583 message (the standard every card network speaks) travel acquirer → scheme → issuer and back. PAN masked, HMAC computed live in your browser.
+    </p>
+
+    <div class="sim-controls">
+      <button class="sim-btn sim-approve" data-scenario="approve">▶ Approve ($42.00)</button>
+      <button class="sim-btn sim-dcc" data-scenario="dcc">▶ DCC Offer (USD→EUR)</button>
+      <button class="sim-btn sim-decline" data-scenario="decline">▶ Decline + Reversal</button>
+    </div>
+
+    <div class="sim-pipeline">
+      <div class="sim-node" data-node="0">
+        <div class="sim-node-icon">💳</div>
+        <div class="sim-node-label">POS</div>
+        <div class="sim-node-sub">Terminal</div>
+      </div>
+      <div class="sim-edge" data-edge="0"><div class="sim-packet"></div></div>
+      <div class="sim-node" data-node="1">
+        <div class="sim-node-icon">🏦</div>
+        <div class="sim-node-label">Acquirer</div>
+        <div class="sim-node-sub">Teya</div>
+      </div>
+      <div class="sim-edge" data-edge="1"><div class="sim-packet"></div></div>
+      <div class="sim-node" data-node="2">
+        <div class="sim-node-icon">🌐</div>
+        <div class="sim-node-label">Scheme</div>
+        <div class="sim-node-sub">Visa</div>
+      </div>
+      <div class="sim-edge" data-edge="2"><div class="sim-packet"></div></div>
+      <div class="sim-node" data-node="3">
+        <div class="sim-node-icon">🏛️</div>
+        <div class="sim-node-label">Issuer</div>
+        <div class="sim-node-sub">Bank</div>
+      </div>
+      <div class="sim-edge" data-edge="3"><div class="sim-packet"></div></div>
+      <div class="sim-node" data-node="4">
+        <div class="sim-node-icon">✅</div>
+        <div class="sim-node-label">Response</div>
+        <div class="sim-node-sub">auth</div>
+      </div>
+    </div>
+
+    <div class="sim-log" id="simLog">
+      <div class="sim-log-empty">→ pick a scenario above to watch the bytes fly</div>
     </div>
   </div>
 
@@ -856,10 +1355,192 @@
 </div>
 
 <script>
+// ═══════════════════════════════════════════════════════════
+// PORTFOLIO DATA — single source of truth consumed by
+// the REPL, the console API, and (eventually) the DOM.
+// ═══════════════════════════════════════════════════════════
+const PORTFOLIO_DATA = {
+  name: "Tahseen Rahman",
+  tagline: "Software engineer. Python by choice, Java by paycheck. 5+ years shipping backend systems in payments and AI.",
+  email: "tahseen.rahman@outlook.in",
+  resume_url: "https://tahseenrahman.notion.site/Tahseen-Rahman-Resume-ae01040ae55f469b919d95963b1171b6",
+  linkedin: "https://www.linkedin.com/in/tahseen09",
+  github: "https://github.com/tahseen09",
+  medium: "https://tahseen-rahman.medium.com",
+  current: { company: "Teya", role: "Software Engineer 2", location: "Porto / India (Remote)", since: "2023-07" },
+  stats: {
+    years_experience: "5+",
+    revenue_impact_dcc: "~25% of Teya revenue",
+    daily_messages_handled: "1M+",
+    user_growth_interakt: "400%",
+  },
+  experience: [
+    {
+      company: "Teya",
+      role: "Software Engineer 2",
+      period: "Jul 2023 – Present",
+      current: true,
+      highlights: [
+        "Built card schemes simulator (Visa, Mastercard, Amex) automating tests",
+        "Implemented Dynamic Currency Conversion (DCC) — ~25% of total revenue",
+        "Payment pre-auth for hospitality & rental with BASE24 BIC ISO message framing",
+        "Data encryption with AWS KMS + API idempotency via HMAC-SHA256",
+        "Automated payment reversal retry with exponential backoff",
+        "RabbitMQ connection pooling reducing network latency",
+      ],
+    },
+    {
+      company: "Jio-Haptik (Interakt)",
+      role: "Software Engineer",
+      period: "Nov 2021 – Jun 2023",
+      current: false,
+      highlights: [
+        "Led team of 5 building wallet system — Stripe & Razorpay",
+        "Built sandbox mode: conversion 3-4d → 0d, +50% conversions",
+        "Redesigned billing from scratch: +37% revenue",
+        "Scaled CSV import 1K (sync) → 1M rows (async) for enterprise",
+        "Search infra with Elasticsearch + Kafka — minutes → seconds @ 50 req/s",
+        "Predefined replies system: -30% FAQ response time",
+      ],
+    },
+    {
+      company: "Compile Inc.",
+      role: "Software Engineer",
+      period: "Jul 2020 – Oct 2021",
+      current: false,
+      highlights: [
+        "ETL pipelines for US healthcare data (Python + Spark)",
+        "In-house ETL framework reducing dev time",
+        "Snowflake schema visualization web app (Django)",
+        "YAML-to-SQL parser for non-technical users",
+        "Matching algorithm for dataset correlation without unique IDs",
+      ],
+    },
+    {
+      company: "Saarthi.ai",
+      role: "Backend Developer Intern",
+      period: "Dec 2018 – Jan 2020",
+      current: false,
+      highlights: [
+        "ML model training and prediction pipeline",
+        "Analytics dashboard with Elastic Stack for chatbot metrics",
+        "Organization management tool with role-based permissions",
+      ],
+    },
+  ],
+  skills: {
+    languages: ["Python", "Java", "JavaScript"],
+    frameworks: ["Django", "Flask", "Spring Boot", "Vue.js"],
+    data: ["PySpark", "Pandas", "Elasticsearch", "Kafka", "RabbitMQ"],
+    storage: ["PostgreSQL", "MongoDB", "Snowflake"],
+    cloud: ["AWS", "Azure", "Grafana"],
+    tools: ["Git"],
+  },
+  projects: [
+    { name: "ICU Management System", kind: "Freelance", stack: ["Python", "Django", "AI/CV", "SQLite3"], blurb: "End-to-end ICU platform with AI-enabled vitals extraction from monitor photos." },
+    { name: "Zartaj", url: "https://zartaj.in", kind: "Freelance", stack: ["Python", "Django", "SQLite3"], blurb: "Full-featured online shopping platform with catalog, cart, checkout, and backoffice." },
+    { name: "Restaurant 365", kind: "Freelance", stack: ["Python", "Django", "SQLite3"], blurb: "Restaurant management — operations, orders, day-to-day workflows." },
+  ],
+  publications: [
+    { title: "Six Coding Rules I Follow", url: "https://tahseen-rahman.medium.com/six-coding-rules-i-follow-d27d8541dc25" },
+    { title: "How Elastic Can Be Elastic Stack", url: "https://tahseen-rahman.medium.com/elasticstack-fd588287e321" },
+    { title: "How to Deploy Django Application on AWS", url: "https://medium.com/saarthi-ai/ec2apachedjango-838e3f6014ab" },
+  ],
+  education: { degree: "B.Tech — Computer Science & Engineering", school: "Indira Gandhi Institute of Technology", years: "2016 – 2020" },
+};
+
+// ═══════════════════════════════════════════════════════════
+// CONSOLE API — window.Portfolio for curious devs with DevTools open
+// ═══════════════════════════════════════════════════════════
+(function() {
+  const d = PORTFOLIO_DATA;
+  const open = (u) => window.open(u, '_blank', 'noopener');
+
+  window.Portfolio = {
+    hire_me(role = 'Software Engineer') {
+      const subject = encodeURIComponent(`Let's talk — ${role} opportunity`);
+      const body = encodeURIComponent(`Hi Tahseen,\n\nSaw your portfolio. I'd like to discuss a ${role} role with you.\n\n`);
+      window.location.href = `mailto:${d.email}?subject=${subject}&body=${body}`;
+      return '📬 opening mail…';
+    },
+    coffee_chat() {
+      open(d.linkedin);
+      return '☕ opening LinkedIn — DM me "coffee chat" and I\'ll send times.';
+    },
+    resume() { open(d.resume_url); return '📄 resume opened'; },
+    github() { open(d.github); return '🐙 opening github'; },
+    medium() { open(d.medium); return '✍️ opening medium'; },
+    linkedin() { open(d.linkedin); return '🔗 opening linkedin'; },
+    stats() { return d.stats; },
+    experience() { return d.experience; },
+    skills() { return d.skills; },
+    from(referrer) {
+      const messages = {
+        hn: "👋 welcome from Hacker News. The REPL is real — try `import tahseen_rahman as t`.",
+        linkedin: "👋 hi from LinkedIn. If you're a recruiter, try Portfolio.hire_me('your role').",
+        twitter: "👋 from the bird site. DMs open.",
+        x: "👋 from the bird site. DMs open.",
+        github: "👋 fellow open-sourcerer. Source of this page is at github.com/tahseen09.",
+      };
+      const key = (referrer || '').toLowerCase();
+      return messages[key] || `👋 hi from ${referrer || 'wherever you came from'}`;
+    },
+    secrets() {
+      console.log('%c  🗝  you found the secrets  ', 'background:#bc8cff;color:#0a0e17;padding:4px 10px;border-radius:4px;font-weight:700;');
+      console.log('%c  Konami code unlocks rainbow mode.', 'color:#39d2c0');
+      console.log('%c  Type "matrix" anywhere → matrix rain.', 'color:#39d2c0');
+      console.log('%c  Click any stat → screen shake + particle burst.', 'color:#39d2c0');
+      console.log('%c  The terminal up top? Real Python. Try it.', 'color:#58a6ff;font-weight:700');
+      return undefined;
+    },
+  };
+
+  // Console banner. Big text via %c styling.
+  const title = [
+    '%c  pip install tahseen-rahman  %c',
+    '',
+    'background:linear-gradient(135deg,#58a6ff,#39d2c0);color:#0a0e17;font-weight:700;padding:8px 14px;border-radius:6px;font-size:14px;',
+    '',
+  ];
+  console.log(...title);
+  console.log('%cSoftware engineer · payments · Python/Java · Teya', 'color:#7d8590;font-style:italic;');
+
+  // Referrer-aware greeting
+  let ref = '';
+  try {
+    const r = document.referrer || '';
+    if (r.includes('linkedin')) ref = 'linkedin';
+    else if (r.includes('ycombinator') || r.includes('news.ycombinator')) ref = 'hn';
+    else if (r.includes('twitter') || r.includes('t.co') || r.includes('x.com')) ref = 'twitter';
+    else if (r.includes('github')) ref = 'github';
+    const urlRef = new URLSearchParams(location.search).get('ref');
+    if (urlRef) ref = urlRef.toLowerCase();
+  } catch(_) {}
+  if (ref) {
+    setTimeout(() => console.log('%c' + window.Portfolio.from(ref), 'color:#39d2c0;font-size:13px;'), 200);
+  }
+
+  console.log('\n%cTry these in the console:', 'color:#e6edf3;font-weight:600;');
+  const cmds = [
+    'Portfolio.hire_me("Senior Backend")',
+    'Portfolio.coffee_chat()',
+    'Portfolio.resume()',
+    'Portfolio.experience()',
+    'Portfolio.secrets()',
+  ];
+  cmds.forEach(c => console.log('  %c> ' + c, 'color:#58a6ff;font-family:monospace;'));
+  console.log('\n%cOr type %cimport tahseen_rahman as t%c in the terminal above — it\'s a real Python REPL.',
+    'color:#7d8590;', 'color:#d29922;font-weight:700;background:rgba(210,153,34,0.1);padding:1px 4px;border-radius:3px;', 'color:#7d8590;');
+})();
+
+// ═══════════════════════════════════════════════════════════
+// TERMINAL + REPL
+// ═══════════════════════════════════════════════════════════
 const termBody = document.getElementById('terminalBody');
 const skipBtn = document.getElementById('skipBtn');
 let animationAborted = false;
 let animationDone = false;
+let replInitialized = false;
 
 // Terminal animation script
 const lines = [
@@ -869,15 +1550,15 @@ const lines = [
   { text: '<span class="pip-dl">Collecting backend-engineering>=5.0</span>', delay: 200 },
   { text: '<span class="pip-dl">Collecting payment-infrastructure>=2.0</span>', delay: 200 },
   { text: '<span class="pip-dl">Collecting python, java, javascript</span>', delay: 200 },
-  { text: '<span class="pip-dl">Collecting django, flask, spring-boot, vue.js</span>', delay: 200 },
-  { text: '<span class="pip-dl">Collecting elasticsearch, kafka, rabbitmq</span>', delay: 150 },
+  { text: '<span class="pip-dl">Collecting elasticsearch, kafka, rabbitmq</span>', delay: 200 },
   { text: '<span class="pip-dl">Collecting postgresql, mongodb, snowflake</span>', delay: 150 },
   { text: '<span class="pip-dl">Collecting aws, azure, grafana</span>', delay: 150 },
   { text: '', delay: 100, bar: true },
   { text: '<span class="pip-ok">Successfully installed tahseen-rahman-5.0.0</span>', delay: 400 },
   { text: '', delay: 200 },
-  { text: '<span class="prompt">$</span> <span class="cmd">python -c</span> <span class="pip-pkg">"from tahseen_rahman import Portfolio; Portfolio().render()"</span>', delay: 500, typing: true },
-  { text: '<span class="pip-dl">Rendering portfolio...</span>', delay: 600 },
+  { text: '<span class="prompt">$</span> <span class="cmd">python</span>', delay: 500, typing: true },
+  { text: '<span class="pip-dl">Python 3.12 (Pyodide) on WebAssembly</span>', delay: 200 },
+  { text: '<span class="pip-dl">Type <span class="pip-pkg">help(t)</span> after <span class="pip-pkg">import tahseen_rahman as t</span>. Or <span class="pip-pkg">exit()</span> to open the full portfolio.</span>', delay: 200 },
 ];
 
 function sleep(ms) {
@@ -949,8 +1630,8 @@ async function runAnimation() {
     }
   }
 
-  await sleep(500);
-  if (!animationAborted) showPortfolio();
+  await sleep(300);
+  if (!animationAborted) startRepl();
 }
 
 function showPortfolio() {
@@ -981,6 +1662,374 @@ function skipAnimation() {
   showPortfolio();
 }
 
+// ═══════════════════════════════════════════════════════════
+// REPL — real Python via Pyodide
+// ═══════════════════════════════════════════════════════════
+let pyodideReady = null; // Promise<pyodide> once loading starts
+let pyodideInstance = null;
+let replHistory = [];
+let replHistoryIdx = -1;
+
+function startRepl() {
+  if (replInitialized) return;
+  replInitialized = true;
+
+  // Hide the progress-bar "skip" since user is now in the REPL; show an "open portfolio" link.
+  skipBtn.classList.remove('visible');
+
+  // Detect low-bandwidth fallback — skip Pyodide entirely.
+  const conn = navigator.connection;
+  const saveData = conn && conn.saveData === true;
+  const slow = conn && /^(slow-2g|2g)$/.test(conn.effectiveType || '');
+  if (saveData || slow) {
+    replFallbackLine('// low-bandwidth detected — skipping Python runtime.');
+    appendOpenPortfolioButton();
+    return;
+  }
+
+  // Show a "booting python" indicator and an input line.
+  const statusLine = appendLine('<span class="repl-status"><span class="repl-dot"></span>booting python runtime…</span>');
+  appendInputLine();
+  focusReplInput();
+
+  // Lazy-load Pyodide
+  loadPyodideSdk().then(pyodide => {
+    pyodideInstance = pyodide;
+    bootPythonModule(pyodide).then(() => {
+      statusLine.innerHTML = '<span class="repl-status ready"><span class="repl-dot"></span>live python ready · try <span class="pip-pkg">import tahseen_rahman as t</span></span>';
+      focusReplInput();
+    }).catch(err => {
+      console.error(err);
+      statusLine.innerHTML = '<span class="pip-dl">// python runtime failed to init. ' + escapeHtml(String(err)) + '</span>';
+      appendOpenPortfolioButton();
+    });
+  }).catch(err => {
+    console.warn('Pyodide load failed', err);
+    statusLine.innerHTML = '<span class="pip-dl">// couldn\'t load pyodide — opening full portfolio in 2s…</span>';
+    setTimeout(() => showPortfolio(), 2000);
+  });
+
+  appendOpenPortfolioButton();
+}
+
+function loadPyodideSdk() {
+  if (pyodideReady) return pyodideReady;
+  pyodideReady = new Promise((resolve, reject) => {
+    const to = setTimeout(() => reject(new Error('pyodide load timeout')), 15000);
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js';
+    s.onload = async () => {
+      clearTimeout(to);
+      try {
+        const py = await window.loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/' });
+        resolve(py);
+      } catch (e) { reject(e); }
+    };
+    s.onerror = () => { clearTimeout(to); reject(new Error('pyodide script error')); };
+    document.head.appendChild(s);
+  });
+  return pyodideReady;
+}
+
+async function bootPythonModule(pyodide) {
+  // Hand over the portfolio data to Python-land.
+  pyodide.registerJsModule('_tahseen_js', { data: PORTFOLIO_DATA });
+
+  // stdout/stderr → our terminal
+  pyodide.setStdout({ batched: (s) => writeReplOutput(s, 'stdout') });
+  pyodide.setStderr({ batched: (s) => writeReplOutput(s, 'stderr') });
+
+  // Define the Python-facing module with proper docstrings, filters, __repr__.
+  await pyodide.runPythonAsync(`
+import sys, json, webbrowser
+from _tahseen_js import data as _raw
+# pyodide proxies need .to_py() to become real Python dicts/lists
+_d = _raw.to_py()
+
+class _Stats:
+    """Tahseen's career-at-a-glance metrics."""
+    def __init__(self, s):
+        self._s = s
+        for k, v in s.items():
+            setattr(self, k, v)
+    def __repr__(self):
+        rows = [f"  {k:<28} {v!r}" for k, v in self._s.items()]
+        return "stats(\\n" + "\\n".join(rows) + "\\n)"
+
+class _TahseenRahman:
+    """
+    tahseen_rahman — backend engineer, payments infra, Python/Java.
+
+    Attributes:
+        name, tagline, email, resume_url, github, linkedin, medium
+        stats       — career metrics (.years_experience, .revenue_impact_dcc, ...)
+        current     — current role dict
+
+    Methods:
+        experience(company=None)  — list roles (optionally filtered by company substring)
+        skills(category=None)     — flat list or grouped skills dict
+        projects()                — freelance / side projects
+        publications()            — written articles
+        education()               — degree info
+        hire_me(role='SWE')       — opens mail client with prefilled subject
+        resume()                  — opens resume in new tab
+        coffee_chat()             — opens LinkedIn to DM
+    """
+    def __init__(self, d):
+        self._d = d
+        self.name = d['name']
+        self.tagline = d['tagline']
+        self.email = d['email']
+        self.resume_url = d['resume_url']
+        self.github = d['github']
+        self.linkedin = d['linkedin']
+        self.medium = d['medium']
+        self.current = d['current']
+        self.stats = _Stats(d['stats'])
+
+    def __repr__(self):
+        return (
+            f"<tahseen_rahman v5.0.0>\\n"
+            f"  {self.tagline}\\n"
+            f"  currently: {self.current['role']} @ {self.current['company']} ({self.current['location']})\\n"
+            f"  type help(t) for the full API"
+        )
+
+    def experience(self, company=None):
+        "List experience. Pass company='teya' to filter (substring, case-insensitive)."
+        xs = self._d['experience']
+        if company:
+            c = company.lower()
+            xs = [x for x in xs if c in x['company'].lower()]
+        return xs
+
+    def skills(self, category=None):
+        "Return all skills grouped, or a flat list for a given category ('languages', 'frameworks', ...)."
+        if category is None:
+            return self._d['skills']
+        return self._d['skills'].get(category, [])
+
+    def projects(self):
+        return self._d['projects']
+
+    def publications(self):
+        return self._d['publications']
+
+    def education(self):
+        return self._d['education']
+
+    def hire_me(self, role="Software Engineer"):
+        "Opens your mail client with a prefilled subject."
+        import js, urllib.parse
+        subject = urllib.parse.quote(f"Let's talk — {role} opportunity")
+        body = urllib.parse.quote(f"Hi Tahseen,\\n\\nSaw your portfolio. I'd like to discuss a {role} role with you.\\n\\n")
+        js.window.location.href = f"mailto:{self.email}?subject={subject}&body={body}"
+        return f"📬 opening mail for a {role} conversation…"
+
+    def resume(self):
+        "Opens resume in a new tab."
+        import js
+        js.window.open(self.resume_url, "_blank")
+        return "📄 resume opened"
+
+    def coffee_chat(self):
+        "Opens LinkedIn — DM 'coffee chat' and I'll send times."
+        import js
+        js.window.open(self.linkedin, "_blank")
+        return "☕ opening linkedin"
+
+    def open_portfolio(self):
+        "Exit the REPL and reveal the scrollable portfolio."
+        import js
+        js.showPortfolio()
+        return "→ opening full portfolio"
+
+_t_instance = _TahseenRahman(_d)
+
+# Expose as a proper importable module
+import types
+tahseen_rahman = types.ModuleType('tahseen_rahman')
+tahseen_rahman.__doc__ = _TahseenRahman.__doc__
+# Hoist attributes onto the module so \`import tahseen_rahman; tahseen_rahman.experience()\` works too.
+for _name in ['name','tagline','email','resume_url','github','linkedin','medium','current','stats',
+              'experience','skills','projects','publications','education','hire_me','resume','coffee_chat','open_portfolio']:
+    setattr(tahseen_rahman, _name, getattr(_t_instance, _name))
+sys.modules['tahseen_rahman'] = tahseen_rahman
+
+# Helpful aliases
+t = _t_instance
+tr = _t_instance
+
+# Override exit() to reveal the portfolio
+def _exit(*a, **k):
+    import js
+    js.showPortfolio()
+    return None
+exit = _exit
+quit = _exit
+
+print("tahseen_rahman 5.0.0 loaded. t = <tahseen_rahman>. Try t.experience() or help(t).")
+`);
+}
+
+// ── DOM helpers for the REPL ──
+function appendLine(html) {
+  const el = document.createElement('div');
+  el.className = 'line visible';
+  el.innerHTML = html;
+  termBody.appendChild(el);
+  scrollTerminalToBottom();
+  return el;
+}
+
+function replFallbackLine(msg) {
+  appendLine('<span class="pip-dl">' + escapeHtml(msg) + '</span>');
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+let currentInputLine = null;
+let currentInputEl = null;
+
+function appendInputLine(prompt = '&gt;&gt;&gt; ') {
+  const row = document.createElement('div');
+  row.className = 'line visible repl-row';
+  row.innerHTML = '<span class="repl-prompt">' + prompt + '</span><span class="repl-input" contenteditable="true" spellcheck="false" autocapitalize="off" autocomplete="off"></span>';
+  termBody.appendChild(row);
+  currentInputLine = row;
+  currentInputEl = row.querySelector('.repl-input');
+  currentInputEl.addEventListener('keydown', onReplKeydown);
+  scrollTerminalToBottom();
+  return row;
+}
+
+function focusReplInput() {
+  if (currentInputEl) {
+    currentInputEl.focus();
+    // place caret at end
+    const r = document.createRange();
+    r.selectNodeContents(currentInputEl);
+    r.collapse(false);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(r);
+  }
+}
+
+function scrollTerminalToBottom() {
+  termBody.scrollTop = termBody.scrollHeight;
+}
+
+function writeReplOutput(text, kind = 'stdout') {
+  if (text == null) return;
+  const cls = kind === 'stderr' ? 'repl-err' : 'repl-out';
+  const el = document.createElement('div');
+  el.className = 'line visible ' + cls;
+  el.textContent = text;
+  // Insert BEFORE the current input line if one exists
+  if (currentInputLine && currentInputLine.parentNode) {
+    termBody.insertBefore(el, currentInputLine);
+  } else {
+    termBody.appendChild(el);
+  }
+  scrollTerminalToBottom();
+}
+
+function appendOpenPortfolioButton() {
+  if (document.getElementById('openPortfolioBtn')) return;
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'text-align:center; margin-top: 16px;';
+  wrap.innerHTML = '<button id="openPortfolioBtn" class="open-portfolio-btn" type="button">→ open the full portfolio</button>';
+  document.querySelector('.terminal').parentNode.appendChild(wrap);
+  document.getElementById('openPortfolioBtn').addEventListener('click', showPortfolio);
+}
+
+async function onReplKeydown(e) {
+  const el = currentInputEl;
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const src = el.innerText;
+    // "freeze" this line
+    el.contentEditable = 'false';
+    el.removeEventListener('keydown', onReplKeydown);
+    currentInputLine = null;
+    currentInputEl = null;
+
+    if (src.trim()) {
+      replHistory.push(src);
+      replHistoryIdx = replHistory.length;
+    }
+
+    await runReplCommand(src);
+
+    appendInputLine();
+    focusReplInput();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (replHistory.length === 0) return;
+    replHistoryIdx = Math.max(0, replHistoryIdx - 1);
+    el.textContent = replHistory[replHistoryIdx] || '';
+    focusReplInput();
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (replHistory.length === 0) return;
+    replHistoryIdx = Math.min(replHistory.length, replHistoryIdx + 1);
+    el.textContent = replHistory[replHistoryIdx] || '';
+    focusReplInput();
+  } else if (e.key === 'l' && (e.ctrlKey || e.metaKey)) {
+    // Ctrl/Cmd+L clears
+    e.preventDefault();
+    clearTerminal();
+  }
+}
+
+function clearTerminal() {
+  termBody.innerHTML = '';
+  appendInputLine();
+  focusReplInput();
+}
+
+async function runReplCommand(src) {
+  if (!src.trim()) return;
+  if (!pyodideInstance) {
+    writeReplOutput('(python still booting — try again in a moment)', 'stderr');
+    return;
+  }
+
+  // Try expression-mode first so bare expressions print a repr, like a real REPL.
+  try {
+    const asyncEval = `
+import ast, sys
+_src = ${JSON.stringify(src)}
+try:
+    _tree = ast.parse(_src, mode='exec')
+except SyntaxError as _e:
+    raise
+if _tree.body and isinstance(_tree.body[-1], ast.Expr):
+    _last = _tree.body.pop()
+    if _tree.body:
+        exec(compile(ast.Module(body=_tree.body, type_ignores=[]), '<repl>', 'exec'), globals())
+    _val = eval(compile(ast.Expression(_last.value), '<repl>', 'eval'), globals())
+    if _val is not None:
+        print(repr(_val))
+else:
+    exec(compile(_tree, '<repl>', 'exec'), globals())
+`;
+    await pyodideInstance.runPythonAsync(asyncEval);
+  } catch (err) {
+    // Pyodide wraps Python errors; stringify captures the traceback.
+    writeReplOutput(String(err.message || err), 'stderr');
+  }
+}
+
+// Clicking anywhere on the terminal body focuses the input.
+document.addEventListener('DOMContentLoaded', () => {
+  const term = document.querySelector('.terminal');
+  if (term) term.addEventListener('click', focusReplInput);
+});
+
 // Scroll-triggered reveals (for when user scrolls down after portfolio loads)
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => {
@@ -1000,17 +2049,33 @@ window.addEventListener('scroll', () => {
   }
 });
 
-// ─── PARTICLE BACKGROUND ───
+// ─── MOUSE STATE (shared) ───
+const mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2, down: false };
+window.addEventListener('mousemove', e => {
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+  // Drive ambient aura via CSS vars
+  document.body.style.setProperty('--mx', (e.clientX / window.innerWidth * 100) + '%');
+  document.body.style.setProperty('--my', (e.clientY / window.innerHeight * 100) + '%');
+});
+window.addEventListener('mousedown', () => mouse.down = true);
+window.addEventListener('mouseup', () => mouse.down = false);
+
+// ─── INTERACTIVE PARTICLE BACKGROUND ───
 (function() {
   const canvas = document.getElementById('particles');
   const ctx = canvas.getContext('2d');
-  let w, h, particles;
-  const COUNT = 60;
-  const MAX_DIST = 120;
+  let w, h, particles, bursts = [];
+  const COUNT = 80;
+  const MAX_DIST = 140;
+  const MOUSE_RADIUS = 160;
 
   function resize() {
-    w = canvas.width = window.innerWidth;
-    h = canvas.height = window.innerHeight;
+    const dpr = window.devicePixelRatio || 1;
+    w = window.innerWidth; h = window.innerHeight;
+    canvas.width = w * dpr; canvas.height = h * dpr;
+    canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
   function init() {
@@ -1022,37 +2087,86 @@ window.addEventListener('scroll', () => {
         y: Math.random() * h,
         vx: (Math.random() - 0.5) * 0.4,
         vy: (Math.random() - 0.5) * 0.4,
-        r: Math.random() * 1.5 + 0.5
+        r: Math.random() * 1.5 + 0.5,
+        baseR: 0
       });
+      particles[i].baseR = particles[i].r;
     }
   }
+
+  // Explode a burst of particles from x,y with a given color
+  window.spawnBurst = function(x, y, color = '57,210,192', n = 24) {
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2 + Math.random() * 0.5;
+      const sp = 2 + Math.random() * 4;
+      bursts.push({
+        x, y,
+        vx: Math.cos(a) * sp,
+        vy: Math.sin(a) * sp,
+        life: 1,
+        color,
+        size: 2 + Math.random() * 2
+      });
+    }
+  };
 
   function draw() {
     ctx.clearRect(0, 0, w, h);
 
-    // Draw lines between nearby particles
+    // lines
     for (let i = 0; i < particles.length; i++) {
       for (let j = i + 1; j < particles.length; j++) {
         const dx = particles[i].x - particles[j].x;
         const dy = particles[i].y - particles[j].y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < MAX_DIST) {
-          const alpha = (1 - dist / MAX_DIST) * 0.15;
+          const alpha = (1 - dist / MAX_DIST) * 0.18;
           ctx.beginPath();
           ctx.moveTo(particles[i].x, particles[i].y);
           ctx.lineTo(particles[j].x, particles[j].y);
           ctx.strokeStyle = `rgba(88, 166, 255, ${alpha})`;
-          ctx.lineWidth = 0.5;
+          ctx.lineWidth = 0.6;
           ctx.stroke();
         }
       }
+      // line to mouse
+      const mdx = particles[i].x - mouse.x;
+      const mdy = particles[i].y - mouse.y;
+      const mDist = Math.sqrt(mdx * mdx + mdy * mdy);
+      if (mDist < MOUSE_RADIUS) {
+        const alpha = (1 - mDist / MOUSE_RADIUS) * 0.6;
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(mouse.x, mouse.y);
+        ctx.strokeStyle = `rgba(57, 210, 192, ${alpha})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
     }
 
-    // Draw and move particles
+    // particles with mouse repulsion (or attraction on click)
     for (const p of particles) {
+      const mdx = p.x - mouse.x;
+      const mdy = p.y - mouse.y;
+      const mDist = Math.sqrt(mdx * mdx + mdy * mdy);
+      if (mDist < MOUSE_RADIUS && mDist > 0) {
+        const force = (1 - mDist / MOUSE_RADIUS) * (mouse.down ? -0.6 : 0.5);
+        p.vx += (mdx / mDist) * force;
+        p.vy += (mdy / mDist) * force;
+        p.r = p.baseR + (1 - mDist / MOUSE_RADIUS) * 2;
+      } else {
+        p.r += (p.baseR - p.r) * 0.1;
+      }
+
+      p.vx *= 0.96;
+      p.vy *= 0.96;
+      // baseline drift
+      p.vx += (Math.random() - 0.5) * 0.02;
+      p.vy += (Math.random() - 0.5) * 0.02;
+
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(88, 166, 255, 0.3)';
+      ctx.fillStyle = `rgba(88, 166, 255, ${0.3 + (p.r - p.baseR) * 0.3})`;
       ctx.fill();
 
       p.x += p.vx;
@@ -1064,12 +2178,521 @@ window.addEventListener('scroll', () => {
       if (p.y > h) p.y = 0;
     }
 
+    // bursts
+    for (let i = bursts.length - 1; i >= 0; i--) {
+      const b = bursts[i];
+      b.x += b.vx; b.y += b.vy;
+      b.vx *= 0.96; b.vy *= 0.96;
+      b.vy += 0.08;
+      b.life -= 0.02;
+      if (b.life <= 0) { bursts.splice(i, 1); continue; }
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.size * b.life, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${b.color}, ${b.life})`;
+      ctx.fill();
+    }
+
     requestAnimationFrame(draw);
   }
 
   window.addEventListener('resize', resize);
   init();
   draw();
+})();
+
+// ─── CUSTOM CURSOR ───
+(function() {
+  const dot = document.getElementById('cursorDot');
+  const ring = document.getElementById('cursorRing');
+  let rx = mouse.x, ry = mouse.y;
+  function follow() {
+    dot.style.left = mouse.x + 'px';
+    dot.style.top = mouse.y + 'px';
+    rx += (mouse.x - rx) * 0.18;
+    ry += (mouse.y - ry) * 0.18;
+    ring.style.left = rx + 'px';
+    ring.style.top = ry + 'px';
+    requestAnimationFrame(follow);
+  }
+  follow();
+  document.addEventListener('mouseover', e => {
+    if (e.target.closest('a, button, .skill-tag, .stat-card, .proj-card, .exp-card, .hero h1')) {
+      ring.classList.add('hover');
+    } else {
+      ring.classList.remove('hover');
+    }
+  });
+  document.addEventListener('mousedown', () => ring.classList.add('click'));
+  document.addEventListener('mouseup', () => ring.classList.remove('click'));
+})();
+
+// ─── CLICK RIPPLE + BURST ───
+document.addEventListener('click', e => {
+  // skip clicks on the matrix overlay etc
+  const r = document.createElement('div');
+  r.className = 'ripple';
+  r.style.left = e.clientX + 'px';
+  r.style.top = e.clientY + 'px';
+  document.body.appendChild(r);
+  setTimeout(() => r.remove(), 800);
+});
+
+// ─── SCROLL PROGRESS ───
+(function() {
+  const bar = document.getElementById('scrollProgress');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = max > 0 ? (window.scrollY / max) * 100 : 0;
+    bar.style.width = pct + '%';
+  }, { passive: true });
+})();
+
+// ─── 3D TILT ON CARDS ───
+(function() {
+  const cards = document.querySelectorAll('.exp-card, .proj-card, .stat-card, .edu-card');
+  cards.forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const rect = card.getBoundingClientRect();
+      const px = (e.clientX - rect.left) / rect.width;
+      const py = (e.clientY - rect.top) / rect.height;
+      const rx = (py - 0.5) * -8;
+      const ry = (px - 0.5) * 8;
+      card.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-4px)`;
+      card.style.setProperty('--lx', (e.clientX - rect.left) + 'px');
+      card.style.setProperty('--ly', (e.clientY - rect.top) + 'px');
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = '';
+    });
+  });
+})();
+
+// ─── MAGNETIC BUTTONS ───
+(function() {
+  const magnetic = document.querySelectorAll('.hero-link, .cta-btn');
+  magnetic.forEach(btn => {
+    btn.addEventListener('mousemove', e => {
+      const rect = btn.getBoundingClientRect();
+      const x = e.clientX - (rect.left + rect.width / 2);
+      const y = e.clientY - (rect.top + rect.height / 2);
+      btn.style.transform = `translate(${x * 0.25}px, ${y * 0.35}px)`;
+    });
+    btn.addEventListener('mouseleave', () => {
+      btn.style.transform = '';
+    });
+  });
+})();
+
+// ─── HERO NAME: per-char spans + scramble on hover ───
+(function() {
+  const h1 = document.getElementById('heroName');
+  if (!h1) return;
+  const text = h1.dataset.text;
+  h1.innerHTML = text.split('').map(c =>
+    c === ' ' ? '<span class="char">&nbsp;</span>' : `<span class="char">${c}</span>`
+  ).join('');
+
+  const chars = 'アイウエオカキクケコabcdefghijklmnop0123456789@#$%&*';
+  let scrambling = false;
+  function scramble() {
+    if (scrambling) return;
+    scrambling = true;
+    const spans = h1.querySelectorAll('.char');
+    const original = text;
+    let frame = 0;
+    const total = 24;
+    const interval = setInterval(() => {
+      spans.forEach((s, i) => {
+        if (frame > total - spans.length + i) {
+          s.textContent = original[i] === ' ' ? ' ' : original[i];
+          s.style.color = '';
+        } else {
+          s.textContent = chars[Math.floor(Math.random() * chars.length)];
+          s.style.color = '#39d2c0';
+        }
+      });
+      frame++;
+      if (frame >= total + spans.length) {
+        clearInterval(interval);
+        spans.forEach((s, i) => {
+          s.textContent = original[i] === ' ' ? ' ' : original[i];
+          s.style.color = '';
+        });
+        scrambling = false;
+      }
+    }, 40);
+  }
+  h1.addEventListener('mouseenter', scramble);
+  // Scramble once on reveal
+  window._scrambleName = scramble;
+})();
+
+// ─── STATS COUNT-UP ───
+(function() {
+  const vals = document.querySelectorAll('.stat-value');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const el = entry.target;
+      if (el.dataset.counted) return;
+      el.dataset.counted = '1';
+      const raw = el.textContent;
+      const match = raw.match(/(\d+)/);
+      if (!match) return;
+      const target = parseInt(match[1], 10);
+      const suffix = raw.slice(match.index + match[0].length);
+      const prefix = raw.slice(0, match.index);
+      const duration = 1200;
+      const start = performance.now();
+      function step(t) {
+        const p = Math.min(1, (t - start) / duration);
+        const eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = prefix + Math.floor(target * eased) + suffix;
+        if (p < 1) requestAnimationFrame(step);
+        else el.textContent = raw;
+      }
+      requestAnimationFrame(step);
+    });
+  }, { threshold: 0.5 });
+  vals.forEach(v => obs.observe(v));
+})();
+
+// ─── SKILL TAG BURST ON CLICK ───
+(function() {
+  document.querySelectorAll('.skill-tag').forEach(tag => {
+    tag.addEventListener('click', e => {
+      const rect = tag.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const colors = ['57,210,192', '88,166,255', '188,140,255', '210,153,34'];
+      window.spawnBurst(cx, cy, colors[Math.floor(Math.random() * colors.length)], 18);
+    });
+  });
+  // Stat card click = screen shake + burst
+  document.querySelectorAll('.stat-card').forEach(card => {
+    card.addEventListener('click', e => {
+      const rect = card.getBoundingClientRect();
+      window.spawnBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, '88,166,255', 30);
+      document.body.classList.remove('shake');
+      void document.body.offsetWidth;
+      document.body.classList.add('shake');
+      setTimeout(() => document.body.classList.remove('shake'), 500);
+    });
+  });
+})();
+
+// ─── TOAST ───
+function showToast(msg, duration = 2600) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._to);
+  t._to = setTimeout(() => t.classList.remove('show'), duration);
+}
+
+// ─── MATRIX RAIN EASTER EGG ───
+const matrix = (function() {
+  const canvas = document.getElementById('matrix');
+  const ctx = canvas.getContext('2d');
+  let w, h, cols, drops, running = false, raf;
+  const glyphs = 'アイウエオカキクケコサシスセソタチツテトナニヌネノ01{};[]#$%&*+=-<>/';
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+    cols = Math.floor(w / 16);
+    drops = new Array(cols).fill(0).map(() => Math.random() * -100);
+  }
+  function step() {
+    if (!running) return;
+    ctx.fillStyle = 'rgba(10,14,23,0.08)';
+    ctx.fillRect(0, 0, w, h);
+    ctx.font = '16px JetBrains Mono, monospace';
+    for (let i = 0; i < cols; i++) {
+      const ch = glyphs[Math.floor(Math.random() * glyphs.length)];
+      const x = i * 16;
+      const y = drops[i] * 16;
+      ctx.fillStyle = y < 40 ? '#caffbf' : '#3fb950';
+      ctx.fillText(ch, x, y);
+      if (y > h && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    }
+    raf = requestAnimationFrame(step);
+  }
+  function toggle() {
+    running = !running;
+    if (running) {
+      resize();
+      canvas.classList.add('on');
+      ctx.fillStyle = 'rgba(10,14,23,1)';
+      ctx.fillRect(0, 0, w, h);
+      step();
+      showToast('> matrix mode engaged. press any key to exit.');
+      const kill = () => {
+        running = false;
+        canvas.classList.remove('on');
+        cancelAnimationFrame(raf);
+        document.removeEventListener('keydown', kill);
+        canvas.removeEventListener('click', kill);
+      };
+      setTimeout(() => {
+        document.addEventListener('keydown', kill);
+        canvas.addEventListener('click', kill);
+      }, 400);
+    }
+  }
+  window.addEventListener('resize', () => { if (running) resize(); });
+  return { toggle };
+})();
+
+// ─── KONAMI CODE ───
+(function() {
+  const seq = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+  let i = 0;
+  window.addEventListener('keydown', e => {
+    const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    if (k === seq[i]) {
+      i++;
+      if (i === seq.length) {
+        i = 0;
+        document.body.classList.toggle('rainbow');
+        showToast(document.body.classList.contains('rainbow')
+          ? '🌈 rainbow mode on — you found the cheat code'
+          : 'back to normal');
+      }
+    } else {
+      i = (k === seq[0]) ? 1 : 0;
+    }
+  });
+})();
+
+// ─── TYPE "matrix" ANYWHERE ───
+(function() {
+  let buf = '';
+  window.addEventListener('keydown', e => {
+    if (e.key.length !== 1) return;
+    buf = (buf + e.key.toLowerCase()).slice(-6);
+    if (buf.endsWith('matrix')) matrix.toggle();
+  });
+})();
+
+// Kick off the hero name scramble once the portfolio reveals
+const _origShow = showPortfolio;
+showPortfolio = function() {
+  _origShow();
+  setTimeout(() => window._scrambleName && window._scrambleName(), 900);
+  setTimeout(() => showToast('tip: try the konami code ↑↑↓↓←→←→ba', 3500), 2600);
+};
+
+// ═══════════════════════════════════════════════════════════
+// PAYMENT SIMULATOR — ISO 8583 / BASE24-flavored transaction flow
+// ═══════════════════════════════════════════════════════════
+(function() {
+  const log = document.getElementById('simLog');
+  const nodes = Array.from(document.querySelectorAll('.sim-node'));
+  const edges = Array.from(document.querySelectorAll('.sim-edge'));
+  const buttons = Array.from(document.querySelectorAll('.sim-btn'));
+  if (!log || !nodes.length) return;
+
+  let running = false;
+
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  function clearPipeline() {
+    nodes.forEach(n => n.classList.remove('active', 'ok', 'fail'));
+    edges.forEach(e => e.classList.remove('active', 'flowing', 'reverse', 'fail'));
+  }
+
+  function logEntry(html, cls = '') {
+    if (log.querySelector('.sim-log-empty')) log.innerHTML = '';
+    const row = document.createElement('div');
+    row.className = 'sim-log-entry ' + cls;
+    row.innerHTML = html;
+    log.appendChild(row);
+    log.scrollTop = log.scrollHeight;
+    return row;
+  }
+
+  function head(text) { logEntry(`<span class="sim-log-head">━━ ${text} ━━</span>`); }
+  function kv(k, v, cls='') { logEntry(`<span class="k">${k}</span> <span class="v">${v}</span>`, cls); }
+  function comment(text) { logEntry(`<span class="c">// ${text}</span>`); }
+
+  async function flyPacket(edgeIdx, { reverse = false, fail = false } = {}) {
+    const e = edges[edgeIdx];
+    e.classList.add('active');
+    if (reverse) e.classList.add('reverse');
+    if (fail) e.classList.add('fail');
+    // Restart the animation by toggling the class
+    e.classList.remove('flowing');
+    void e.offsetWidth;
+    e.classList.add('flowing');
+    await sleep(900);
+    e.classList.remove('flowing', 'active', 'reverse', 'fail');
+  }
+
+  async function activate(nodeIdx, state = 'active') {
+    nodes[nodeIdx].classList.add(state);
+    await sleep(220);
+  }
+
+  // Generate a pseudo-random STAN (6 digits) and TRN ID
+  function stan() { return String(Math.floor(Math.random() * 900000) + 100000); }
+  function trnId() { return 'TRN-' + Date.now().toString(36).toUpperCase(); }
+  function now() {
+    const d = new Date();
+    return d.toTimeString().slice(0,8) + '.' + String(d.getMilliseconds()).padStart(3,'0');
+  }
+
+  // Compute HMAC-SHA256(key, body) hex, demonstrating the "API idempotency via HMAC-SHA256" bullet.
+  async function hmac256(keyStr, bodyStr) {
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey('raw', enc.encode(keyStr),
+      { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    const sig = await crypto.subtle.sign('HMAC', key, enc.encode(bodyStr));
+    return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  // ── Scenarios ──
+  async function runApprove() {
+    const s = stan(), id = trnId();
+    head('TRANSACTION: card purchase · $42.00');
+    kv('[' + now() + ']', 'Card tapped at POS terminal');
+    await activate(0);
+    await sleep(200);
+
+    comment('Framing ISO 8583 request (BIC-wrapped, BASE24-style)');
+    kv('MTI:', '<span class="v">0200</span> <span class="c">(authorization request)</span>');
+    kv('DE2  PAN:', '4*** **** **** 1234 <span class="c">(Luhn-valid)</span>');
+    kv('DE3  Proc code:', '00 0000 <span class="c">(purchase / goods)</span>');
+    kv('DE4  Amount:', '000000004200 <span class="c">($42.00, minor units)</span>');
+    kv('DE11 STAN:', s);
+    kv('DE41 Term ID:', 'TERM-PT-LIS-042');
+    kv('DE49 Currency:', '978 <span class="c">(EUR)</span>');
+
+    const body = `MTI=0200|PAN=4***1234|AMT=4200|STAN=${s}|TRN=${id}`;
+    const sig = await hmac256('teya-idempotency-key-2026', body);
+    kv('X-Idempotency-Key:', `<span class="c">${sig.slice(0,32)}…</span>`);
+
+    await flyPacket(0);
+    await activate(1);
+    comment('Acquirer (Teya): PAN decrypted via AWS KMS, routed to scheme');
+    await flyPacket(1);
+    await activate(2);
+    comment('Scheme: BIN lookup → Issuer routing');
+    await flyPacket(2);
+    await activate(3);
+    comment('Issuer: risk check, funds check, 3DS skipped (low-ticket)');
+    await sleep(400);
+
+    // Response flight back
+    await flyPacket(3, { reverse: true });
+    nodes[3].classList.remove('active'); nodes[3].classList.add('ok');
+    head('RESPONSE');
+    kv('MTI:', '<span class="v">0210</span> <span class="c">(authorization response)</span>', 'ok');
+    kv('DE39 Resp code:', '00 <span class="c">(approved)</span>', 'ok');
+    kv('DE38 Auth code:', 'A9FZ21', 'ok');
+
+    await flyPacket(2, { reverse: true });
+    nodes[2].classList.remove('active'); nodes[2].classList.add('ok');
+    await flyPacket(1, { reverse: true });
+    nodes[1].classList.remove('active'); nodes[1].classList.add('ok');
+    await flyPacket(0, { reverse: true });
+    nodes[0].classList.remove('active'); nodes[0].classList.add('ok');
+    await activate(4, 'ok');
+    nodes[4].classList.add('ok');
+    kv('✓ Approved', 'total round-trip: ~380ms', 'ok');
+  }
+
+  async function runDcc() {
+    head('TRANSACTION: foreign card · $42.00 at EUR terminal');
+    kv('[' + now() + ']', 'Card tapped — Visa USD-issued at EUR terminal');
+    await activate(0);
+    kv('MTI:', '<span class="v">0200</span>');
+    kv('DE49 Term currency:', '978 <span class="c">(EUR)</span>');
+    kv('Card currency:', '840 <span class="c">(USD)</span>');
+    comment('Currency mismatch — DCC offer path activated');
+
+    await flyPacket(0); await activate(1);
+    comment('Teya DCC engine: fetching live Visa settlement rate');
+    await sleep(500);
+    kv('Base rate:', '1.0842 USD/EUR');
+    kv('Teya margin:', '+2.5% <span class="c">(FX commission)</span>');
+    kv('Quoted rate:', '1.1113 USD/EUR');
+    kv('Cardholder sees:', '<span class="v">$46.67 USD</span> or $42.00 EUR');
+
+    await sleep(600);
+    comment('Cardholder selects: "Pay in USD" — DCC accepted');
+    kv('DE54 Additional amts:', 'USD 4667 @ 1.1113', 'ok');
+
+    await flyPacket(1); await activate(2);
+    await flyPacket(2); await activate(3);
+    await sleep(300);
+    await flyPacket(3, { reverse: true });
+    nodes[3].classList.add('ok'); nodes[3].classList.remove('active');
+    head('RESPONSE');
+    kv('MTI:', '<span class="v">0210</span>', 'ok');
+    kv('DE39 Resp code:', '00 approved', 'ok');
+    await flyPacket(2, { reverse: true });
+    nodes[2].classList.add('ok'); nodes[2].classList.remove('active');
+    await flyPacket(1, { reverse: true });
+    nodes[1].classList.add('ok'); nodes[1].classList.remove('active');
+    await flyPacket(0, { reverse: true });
+    nodes[0].classList.add('ok'); nodes[0].classList.remove('active');
+    await activate(4, 'ok');
+    kv('✓ DCC commission captured:', '€1.05 <span class="c">(feeds the ~25% revenue figure above)</span>', 'ok');
+  }
+
+  async function runDecline() {
+    head('TRANSACTION: card purchase · $999.00');
+    kv('[' + now() + ']', 'High-ticket amount');
+    await activate(0);
+    await flyPacket(0); await activate(1);
+    await flyPacket(1); await activate(2);
+    await flyPacket(2); await activate(3);
+    await sleep(400);
+    comment('Issuer: velocity check failed (fraud signal)');
+
+    // fail path
+    nodes[3].classList.remove('active'); nodes[3].classList.add('fail');
+    await flyPacket(3, { reverse: true, fail: true });
+    await flyPacket(2, { reverse: true, fail: true });
+    await flyPacket(1, { reverse: true, fail: true });
+    await flyPacket(0, { reverse: true, fail: true });
+    head('RESPONSE');
+    kv('MTI:', '<span class="v">0210</span>', 'err');
+    kv('DE39 Resp code:', '<span class="v">05</span> <span class="c">(do not honor)</span>', 'err');
+    nodes.forEach((n,i) => { if (i>0) { n.classList.remove('active','ok'); n.classList.add('fail'); } });
+
+    await sleep(400);
+    head('REVERSAL (automatic)');
+    comment('Teya auto-reversal: prevent phantom auth hold on cardholder');
+    const delays = [1000, 2000, 4000];
+    for (let i = 0; i < delays.length; i++) {
+      kv(`attempt ${i+1}:`, `MTI=0420 retry at +${delays[i]}ms <span class="c">(exponential backoff)</span>`);
+      await sleep(500);
+    }
+    kv('MTI 0430 response:', '00 <span class="c">(reversal accepted)</span>', 'ok');
+    nodes[4].classList.remove('fail'); nodes[4].classList.add('ok');
+    kv('✓ Auth hold released', 'cardholder statement: clean', 'ok');
+  }
+
+  async function run(scenario) {
+    if (running) return;
+    running = true;
+    buttons.forEach(b => b.disabled = true);
+    clearPipeline();
+    log.innerHTML = '';
+    try {
+      if (scenario === 'approve') await runApprove();
+      else if (scenario === 'dcc') await runDcc();
+      else if (scenario === 'decline') await runDecline();
+    } catch (err) {
+      logEntry('<span class="c">// simulator error: ' + String(err.message || err) + '</span>');
+    }
+    buttons.forEach(b => b.disabled = false);
+    running = false;
+  }
+
+  buttons.forEach(b => b.addEventListener('click', () => run(b.dataset.scenario)));
 })();
 
 // Force scroll to top on load
