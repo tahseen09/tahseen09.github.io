@@ -933,6 +933,8 @@
   .signoff-line { white-space: pre-wrap; }
   .signoff-line.out { color: var(--muted); padding-left: 2px; }
   .signoff-line.out.muted { color: #484f58; font-style: italic; }
+  .signoff-line.signoff-hint { display: none; padding-left: 2px; }
+  .signoff-line.signoff-hint.show { display: block; }
   .signoff-prompt { color: var(--green); margin-right: 8px; }
   .signoff-cmd { color: #c9d1d9; }
   .signoff-cursor {
@@ -1923,6 +1925,7 @@
     <div class="signoff-body">
       <div class="signoff-line" data-prompt="$" data-cmd="cat ~/.thanks"></div>
       <div class="signoff-line out">thanks for reading. made it this far? that means something — send a line.</div>
+      <div class="signoff-line out muted signoff-hint" id="signoffHint">ps: you didn't try 😤 brag mode, did you?</div>
       <div class="signoff-line" data-prompt="$" data-cmd="logout"></div>
       <div class="signoff-line out muted">Connection to tahseen-rahman closed.</div>
       <div class="signoff-line prompt-only"><span class="signoff-prompt">$</span><span class="signoff-cursor"></span></div>
@@ -3916,6 +3919,10 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
     entries.forEach(e => {
       if (e.isIntersecting && !played) {
         played = true;
+        // Only tease brag mode to people who haven't found it yet
+        const hint = document.getElementById('signoffHint');
+        const bragSeen = (window.BRAG && window.BRAG.isActive()) || document.body.classList.contains('brag-ever');
+        if (hint && !bragSeen) hint.classList.add('show');
         box.classList.add('visible');
         play();
         obs.disconnect();
@@ -3924,6 +3931,13 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
   }, { threshold: 0.4 });
   obs.observe(box);
 })();
+
+// Remember if brag mode was ever flipped on — the signoff hint looks at this.
+document.addEventListener('click', (e) => {
+  if (e.target && e.target.closest && e.target.closest('#bragToggle')) {
+    document.body.classList.add('brag-ever');
+  }
+}, true);
 
 // Force scroll to top on load
 window.scrollTo(0, 0);
