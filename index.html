@@ -2083,21 +2083,15 @@ let replInitialized = false;
 
 // Terminal animation script
 const lines = [
-  { text: '<span class="prompt">$</span> <span class="cmd">pip install</span> <span class="pip-pkg">tahseen-rahman</span>', delay: 600, typing: true },
-  { text: '<span class="pip-dl">Collecting tahseen-rahman</span>', delay: 400 },
-  { text: '<span class="pip-dl">  Downloading tahseen_rahman-5.0.0-py3-none-any.whl (5+ years)</span>', delay: 300 },
-  { text: '<span class="pip-dl">Collecting backend-engineering>=5.0</span>', delay: 200 },
-  { text: '<span class="pip-dl">Collecting payment-infrastructure>=2.0</span>', delay: 200 },
-  { text: '<span class="pip-dl">Collecting python, java, javascript</span>', delay: 200 },
-  { text: '<span class="pip-dl">Collecting elasticsearch, kafka, rabbitmq</span>', delay: 200 },
-  { text: '<span class="pip-dl">Collecting postgresql, mongodb, snowflake</span>', delay: 150 },
-  { text: '<span class="pip-dl">Collecting aws, azure, grafana</span>', delay: 150 },
-  { text: '', delay: 100, bar: true },
-  { text: '<span class="pip-ok">Successfully installed tahseen-rahman-5.0.0</span>', delay: 400 },
-  { text: '', delay: 200 },
-  { text: '<span class="prompt">$</span> <span class="cmd">python</span>', delay: 500, typing: true },
-  { text: '<span class="pip-dl">Python 3.12 (Pyodide) on WebAssembly</span>', delay: 200 },
-  { text: '<span class="pip-dl">Type <span class="pip-pkg">help(t)</span> after <span class="pip-pkg">import tahseen_rahman as t</span>. Or <span class="pip-pkg">exit()</span> to open the full portfolio.</span>', delay: 200 },
+  { text: '<span class="prompt">$</span> <span class="cmd">pip install</span> <span class="pip-pkg">tahseen-rahman</span>', delay: 250, typing: true },
+  { text: '<span class="pip-dl">Collecting tahseen-rahman (5+ years, payments, Python, Java)</span>', delay: 180 },
+  { text: '<span class="pip-dl">Collecting django, flask, spring-boot, vue.js</span>', delay: 90 },
+  { text: '<span class="pip-dl">Collecting kafka, rabbitmq, elasticsearch, postgresql</span>', delay: 90 },
+  { text: '<span class="pip-dl">Collecting aws (kms, sqs), snowflake, grafana</span>', delay: 90 },
+  { text: '', delay: 60, bar: true },
+  { text: '<span class="pip-ok">Successfully installed tahseen-rahman-5.0.0</span>', delay: 180 },
+  { text: '<span class="prompt">$</span> <span class="cmd">python</span>', delay: 200, typing: true },
+  { text: '<span class="pip-dl">Python 3.12 (Pyodide) &middot; type <span class="pip-pkg">help(t)</span> after <span class="pip-pkg">import tahseen_rahman as t</span>, or <span class="pip-pkg">exit()</span> to open the portfolio.</span>', delay: 120 },
 ];
 
 function sleep(ms) {
@@ -2121,7 +2115,7 @@ async function typeText(el, html) {
     el.textContent = fullText.slice(0, i + 1);
     el.appendChild(cursor);
     i++;
-    await sleep(30 + Math.random() * 30);
+    await sleep(14 + Math.random() * 18);
   }
 
   el.innerHTML = html;
@@ -2132,13 +2126,13 @@ async function renderProgressBar(container) {
   el.className = 'line visible';
   container.appendChild(el);
 
-  const width = 30;
+  const width = 24;
   for (let i = 0; i <= width && !animationAborted; i++) {
     const filled = '\u2588'.repeat(i);
     const empty = '\u2591'.repeat(width - i);
     const pct = Math.round((i / width) * 100);
     el.innerHTML = `<span class="pip-bar-fill">${filled}</span><span class="pip-bar-track">${empty}</span> <span class="pip-dl">${pct}%</span>`;
-    await sleep(25);
+    await sleep(12);
   }
 }
 
@@ -2169,7 +2163,7 @@ async function runAnimation() {
     }
   }
 
-  await sleep(300);
+  await sleep(120);
   if (!animationAborted) startRepl();
 }
 
