@@ -1205,9 +1205,111 @@
     background: rgba(248,81,73,0.08);
     animation: shake 0.4s;
   }
-  .sim-node-icon { font-size: 1.6rem; margin-bottom: 4px; }
+  .sim-node-icon { font-size: 1.6rem; margin-bottom: 4px; transition: transform 0.25s; }
+  .sim-node.active .sim-node-icon { transform: scale(1.2); }
+  .sim-node.ok .sim-node-icon { animation: iconPop 0.45s cubic-bezier(.2,.9,.3,1.3); }
+  .sim-node.fail .sim-node-icon { animation: iconShake 0.45s ease; }
+  @keyframes iconPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.5) rotate(-6deg); }
+    100% { transform: scale(1.1) rotate(0); }
+  }
+  @keyframes iconShake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-4px) rotate(-5deg); }
+    75% { transform: translateX(4px) rotate(5deg); }
+  }
   .sim-node-label { font-size: 0.82rem; font-weight: 700; color: var(--white); }
   .sim-node-sub { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
+
+  /* Per-step action verb that pops up only while the node is active */
+  .sim-node-action {
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    background: rgba(13,17,23,0.95);
+    border: 1px solid rgba(57,210,192,0.4);
+    padding: 3px 10px;
+    border-radius: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .sim-node.active .sim-node-action,
+  .sim-node.ok .sim-node-action,
+  .sim-node.fail .sim-node-action {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  .sim-node.ok .sim-node-action {
+    color: var(--green);
+    border-color: rgba(63,185,80,0.5);
+  }
+  .sim-node.fail .sim-node-action {
+    color: var(--red);
+    border-color: rgba(248,81,73,0.5);
+  }
+
+  /* POS "tap to pay" idle beckon — a pulsing halo + pointer cursor */
+  .sim-node[data-node="0"] {
+    cursor: pointer;
+    user-select: none;
+  }
+  .sim-node[data-node="0"]:hover:not(.active):not(.ok):not(.fail) {
+    border-color: var(--cyan);
+    transform: translateY(-4px) scale(1.04);
+    box-shadow: 0 10px 30px rgba(57,210,192,0.25);
+  }
+  .sim-node-halo {
+    position: absolute;
+    inset: -4px;
+    border-radius: 14px;
+    pointer-events: none;
+    opacity: 0;
+  }
+  .sim-node.idle-beckon .sim-node-halo {
+    opacity: 1;
+    animation: haloPulse 2.2s ease-out infinite;
+  }
+  @keyframes haloPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(57,210,192,0.45); opacity: 1; }
+    70%  { box-shadow: 0 0 0 14px rgba(57,210,192,0);  opacity: 0.6; }
+    100% { box-shadow: 0 0 0 0 rgba(57,210,192,0);     opacity: 0; }
+  }
+  .sim-node.idle-beckon .sim-node-action {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    color: var(--cyan);
+    animation: tapBob 1.8s ease-in-out infinite;
+  }
+  @keyframes tapBob {
+    0%,100% { transform: translateX(-50%) translateY(0); }
+    50%     { transform: translateX(-50%) translateY(-3px); }
+  }
+  .sim-node.idle-beckon:hover .sim-node-halo { animation-duration: 1.1s; }
+
+  /* Button sheen for the primary "tap to pay" */
+  .sim-btn.sim-approve {
+    position: relative;
+    overflow: hidden;
+  }
+  .sim-btn.sim-approve::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(57,210,192,0.25), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.7s;
+  }
+  .sim-btn.sim-approve:hover::after { transform: translateX(100%); }
 
   .sim-edge {
     flex: 1;
@@ -1789,45 +1891,51 @@
     </p>
 
     <div class="sim-controls">
-      <button class="sim-btn sim-approve" data-scenario="approve">▶ Approve ($42.00)</button>
-      <button class="sim-btn sim-dcc" data-scenario="dcc">▶ DCC Offer (USD→EUR)</button>
-      <button class="sim-btn sim-decline" data-scenario="decline">▶ Decline + Reversal</button>
+      <button class="sim-btn sim-approve" data-scenario="approve">💳 tap to pay &middot; $42.00</button>
+      <button class="sim-btn sim-dcc" data-scenario="dcc">🌍 tap with foreign card &middot; DCC</button>
+      <button class="sim-btn sim-decline" data-scenario="decline">⚠️ trigger a decline + reversal</button>
     </div>
 
-    <div class="sim-pipeline">
-      <div class="sim-node" data-node="0">
+    <div class="sim-pipeline" id="simPipeline">
+      <div class="sim-node idle-beckon" data-node="0" id="posNode" role="button" tabindex="0" aria-label="Tap to pay">
         <div class="sim-node-icon">💳</div>
         <div class="sim-node-label">POS</div>
         <div class="sim-node-sub">Terminal</div>
+        <div class="sim-node-action" data-action="tapping">👆 tap to pay</div>
+        <div class="sim-node-halo"></div>
       </div>
       <div class="sim-edge" data-edge="0"><div class="sim-packet"></div></div>
       <div class="sim-node" data-node="1">
         <div class="sim-node-icon">🏦</div>
         <div class="sim-node-label">Acquirer</div>
         <div class="sim-node-sub">Teya</div>
+        <div class="sim-node-action" data-action="routing">routing</div>
       </div>
       <div class="sim-edge" data-edge="1"><div class="sim-packet"></div></div>
       <div class="sim-node" data-node="2">
         <div class="sim-node-icon">🌐</div>
         <div class="sim-node-label">Scheme</div>
         <div class="sim-node-sub">Visa</div>
+        <div class="sim-node-action" data-action="switching">switching</div>
       </div>
       <div class="sim-edge" data-edge="2"><div class="sim-packet"></div></div>
       <div class="sim-node" data-node="3">
         <div class="sim-node-icon">🏛️</div>
         <div class="sim-node-label">Issuer</div>
         <div class="sim-node-sub">Bank</div>
+        <div class="sim-node-action" data-action="deciding">deciding</div>
       </div>
       <div class="sim-edge" data-edge="3"><div class="sim-packet"></div></div>
       <div class="sim-node" data-node="4">
         <div class="sim-node-icon">✅</div>
         <div class="sim-node-label">Response</div>
         <div class="sim-node-sub">auth</div>
+        <div class="sim-node-action" data-action="done">done</div>
       </div>
     </div>
 
     <div class="sim-log" id="simLog">
-      <div class="sim-log-empty">→ pick a scenario above to watch the bytes fly</div>
+      <div class="sim-log-empty">👆 tap the POS above or pick a scenario — watch the ISO 8583 bytes fly.</div>
     </div>
   </div>
 
@@ -3719,8 +3827,16 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
   function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
   function clearPipeline() {
-    nodes.forEach(n => n.classList.remove('active', 'ok', 'fail'));
+    nodes.forEach(n => n.classList.remove('active', 'ok', 'fail', 'idle-beckon'));
     edges.forEach(e => e.classList.remove('active', 'flowing', 'reverse', 'fail'));
+  }
+
+  function restIdle() {
+    // Return the POS node to its idle beckon state for the next visitor action.
+    const pos = document.getElementById('posNode');
+    if (!pos) return;
+    nodes.forEach(n => n.classList.remove('active', 'ok', 'fail'));
+    pos.classList.add('idle-beckon');
   }
 
   function logEntry(html, cls = '') {
@@ -3903,17 +4019,57 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
     clearPipeline();
     log.innerHTML = '';
     try {
-      if (scenario === 'approve') await runApprove();
-      else if (scenario === 'dcc') await runDcc();
-      else if (scenario === 'decline') await runDecline();
+      if (scenario === 'approve') {
+        await runApprove();
+        celebrate('win');
+      } else if (scenario === 'dcc') {
+        await runDcc();
+        celebrate('dcc');
+      } else if (scenario === 'decline') {
+        await runDecline();
+        celebrate('fail');
+      }
     } catch (err) {
       logEntry('<span class="c">// simulator error: ' + String(err.message || err) + '</span>');
     }
     buttons.forEach(b => b.disabled = false);
     running = false;
+    // Settle, then invite the next action.
+    setTimeout(restIdle, 1800);
+  }
+
+  function celebrate(kind) {
+    // Visual reward tied to the outcome. Uses the global spawnBurst helper.
+    const posRect = document.querySelector('.sim-pipeline').getBoundingClientRect();
+    const cx = posRect.left + posRect.width / 2;
+    const cy = posRect.top + posRect.height / 2;
+    if (kind === 'win' && window.spawnBurst) {
+      ['63,185,80','57,210,192','88,166,255'].forEach((c, i) =>
+        setTimeout(() => window.spawnBurst(cx + (Math.random() - 0.5) * 120, cy, c, 18), i * 80)
+      );
+    } else if (kind === 'dcc' && window.spawnBurst) {
+      window.spawnBurst(cx, cy, '210,153,34', 24);
+    } else if (kind === 'fail') {
+      document.body.classList.remove('shake');
+      void document.body.offsetWidth;
+      document.body.classList.add('shake');
+      setTimeout(() => document.body.classList.remove('shake'), 500);
+    }
   }
 
   buttons.forEach(b => b.addEventListener('click', () => run(b.dataset.scenario)));
+
+  // POS node is itself a "tap to pay" button — triggers approve scenario.
+  const pos = document.getElementById('posNode');
+  if (pos) {
+    pos.addEventListener('click', () => { if (!running) run('approve'); });
+    pos.addEventListener('keydown', (e) => {
+      if ((e.key === 'Enter' || e.key === ' ') && !running) {
+        e.preventDefault();
+        run('approve');
+      }
+    });
+  }
 })();
 
 // ═══════════════════════════════════════════════════════════
