@@ -4194,7 +4194,7 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
   }
 
   async function runDecline() {
-    const s = stan(), id = trnId();
+    const s = stan();
     head('TRANSACTION: card purchase · $999.00');
     kv('[' + now() + ']', 'High-ticket amount');
     await activate(0);
@@ -4271,22 +4271,7 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
     }
 
     kv('✓ Auth hold released', 'cardholder statement: clean', 'ok');
-
-    renderReceipt({
-      time: nowStamp(),
-      location: 'PORTO · PT',
-      trn: id,
-      footer: 'Declined by issuer · auto-reversed · no funds captured.',
-      rows: [
-        { k: 'Card', v: '4*** **** **** 1234' },
-        { k: 'Amount', v: '€ 999.00' },
-        { k: 'MTI', v: '0200 → 0210 → 0420 → 0430' },
-        { k: 'Response', v: '05 · DO NOT HONOR', cls: 'fail' },
-        { k: 'Reversal', v: 'OK · 3rd attempt', cls: 'ok' },
-        { k: 'Retries', v: '0.8s → 1.4s → 2.4s' },
-        { k: 'STAN', v: s },
-      ],
-    });
+    // No receipt on decline — the paper stays in the roll.
   }
 
   async function run(scenario) {
