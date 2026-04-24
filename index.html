@@ -165,6 +165,177 @@
   body.rainbow { animation: hue 6s linear infinite; }
   @keyframes hue { to { filter: hue-rotate(360deg); } }
 
+  /* ═══════════════════════════════════════════════════════════
+     BRAG MODE — the alter ego
+     ═══════════════════════════════════════════════════════════ */
+  .brag-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(248, 81, 73, 0.35);
+    background: linear-gradient(135deg, rgba(248,81,73,0.08), rgba(210,153,34,0.08));
+    color: #ff9a6c;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: all 0.25s cubic-bezier(.2,.9,.3,1.3);
+    position: relative;
+    overflow: hidden;
+  }
+  .brag-toggle:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 24px rgba(248,81,73,0.3);
+    border-color: #f85149;
+  }
+  .brag-toggle::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,154,108,0.3), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.5s;
+  }
+  .brag-toggle:hover::after { transform: translateX(100%); }
+  body.brag .brag-toggle {
+    background: linear-gradient(135deg, #f85149, #d29922);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 4px 20px rgba(248,81,73,0.4);
+  }
+
+  /* Brag theme — overrides without breaking layout */
+  body.brag {
+    --blue: #ff6b9d;
+    --cyan: #ffc857;
+    --magenta: #ff9a6c;
+  }
+  body.brag .hero h1 {
+    background: linear-gradient(135deg, #fff 0%, #ffc857 25%, #ff9a6c 50%, #ff6b9d 75%, #f85149 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    filter: drop-shadow(0 0 24px rgba(248,81,73,0.25));
+  }
+  body.brag .hero-pill {
+    color: #fff;
+    background: linear-gradient(135deg, #f85149, #d29922);
+    border-color: transparent;
+    box-shadow: 0 6px 24px rgba(248,81,73,0.4);
+    animation: float 4s ease-in-out infinite, bragGlow 2s ease-in-out infinite;
+  }
+  body.brag .hero-pill::before {
+    background: #fff;
+    box-shadow: 0 0 0 0 rgba(255,255,255,0.8);
+  }
+  @keyframes bragGlow {
+    0%, 100% { box-shadow: 0 6px 24px rgba(248,81,73,0.4); }
+    50% { box-shadow: 0 6px 36px rgba(248,81,73,0.7), 0 0 60px rgba(210,153,34,0.3); }
+  }
+  body.brag .stat-value {
+    background: linear-gradient(135deg, #ffc857, #ff9a6c, #ff6b9d);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradientShift 4s linear infinite;
+  }
+  body.brag .hero-link.primary {
+    background: linear-gradient(135deg, #f85149, #ff6b9d);
+    border-color: transparent;
+  }
+  body.brag .section-label {
+    color: #ffc857;
+  }
+  body.brag .exp-impact {
+    background: linear-gradient(135deg, rgba(248,81,73,0.2), rgba(210,153,34,0.2));
+    color: #ffc857;
+    font-weight: 700;
+  }
+  body.brag .exp-highlights li::before {
+    content: '🔥';
+    left: -2px;
+  }
+  body.brag .pub-list a::before { content: '✨'; }
+  body.brag #particles { opacity: 0.8; filter: hue-rotate(-80deg) saturate(1.3); }
+
+  /* Floating hot-take bubble */
+  .hot-take {
+    position: fixed;
+    bottom: 88px;
+    right: 24px;
+    max-width: 280px;
+    background: linear-gradient(135deg, #0d1117, #1a0f14);
+    border: 1px solid rgba(248,81,73,0.4);
+    border-radius: 14px;
+    padding: 14px 16px 14px 18px;
+    font-family: var(--font-sans);
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: #fff;
+    z-index: 80;
+    box-shadow: 0 20px 60px rgba(248,81,73,0.25), 0 0 0 1px rgba(255,154,108,0.1);
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+    pointer-events: none;
+    transition: opacity 0.35s, transform 0.35s cubic-bezier(.2,.9,.3,1.3);
+  }
+  .hot-take.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+  }
+  .hot-take::before {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    right: 28px;
+    width: 0; height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid #1a0f14;
+    filter: drop-shadow(0 1px 0 rgba(248,81,73,0.4));
+  }
+  .hot-take-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #ff9a6c;
+    margin-bottom: 4px;
+  }
+  .hot-take-head .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #f85149;
+    box-shadow: 0 0 8px #f85149;
+    animation: pulseDot 1.4s ease-in-out infinite;
+  }
+  .hot-take-body { color: #e6edf3; }
+  .hot-take-close {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 1.1rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 2px 6px;
+  }
+  .hot-take-close:hover { color: #fff; }
+
+  /* Brag skill tags get fire tints randomly via nth-child */
+  body.brag .skill-tag:nth-child(3n) { border-color: rgba(248,81,73,0.3); color: #ff9a6c; }
+  body.brag .skill-tag:nth-child(3n+1) { border-color: rgba(210,153,34,0.3); color: #ffc857; }
+  body.brag .skill-tag:nth-child(3n+2) { border-color: rgba(255,107,157,0.3); color: #ff6b9d; }
+
   /* ─── PARTICLE CANVAS ─── */
   #particles {
     position: fixed;
@@ -1060,9 +1231,16 @@
 <div id="cursorDot"></div>
 <div id="toast"></div>
 
+<!-- Hot-take bubble (alter ego's rotating one-liners) -->
+<aside class="hot-take" id="hotTake" aria-live="polite">
+  <button class="hot-take-close" type="button" aria-label="dismiss">×</button>
+  <div class="hot-take-head"><span class="dot"></span><span>hot take</span></div>
+  <div class="hot-take-body" id="hotTakeBody"></div>
+</aside>
+
 <!-- Sticky CTA -->
 <div class="cta-bar" id="ctaBar">
-  <span class="cta-text"><span>&gt;&gt;&gt;</span> Ready to ship together?</span>
+  <span class="cta-text" data-brag="<span>&gt;&gt;&gt;</span> want to hire me or just here for the vibes?"><span>&gt;&gt;&gt;</span> Ready to ship together?</span>
   <a class="cta-btn email" href="mailto:tahseen.rahman@outlook.in">Email me</a>
   <a class="cta-btn linkedin" href="https://www.linkedin.com/in/tahseen09" target="_blank">LinkedIn</a>
 </div>
@@ -1086,9 +1264,12 @@
 
   <!-- Hero -->
   <div class="hero">
-    <div class="hero-pill">v5.0.0 &middot; actively maintained</div>
-    <h1 id="heroName" data-text="Tahseen Rahman"></h1>
-    <p>Software engineer with 5+ years building scalable backend systems in payment infrastructure and AI. Currently powering real-money transactions at Teya.</p>
+    <div>
+      <span class="hero-pill" id="heroPill" data-brag="🔥 main character mode &middot; online">v5.0.0 &middot; actively maintained</span>
+      <button class="brag-toggle" id="bragToggle" type="button" aria-pressed="false" data-brag="😇 go back to being humble">😤 brag mode</button>
+    </div>
+    <h1 id="heroName" data-text="Tahseen Rahman" data-brag-text="Tahseen 'Prod-Bug Slayer' Rahman"></h1>
+    <p data-brag="Built 25% of a company's revenue while you were in that meeting. Five years of shipping prod code nobody's rolled back. Python by choice, Java by paycheck, ISO 8583 in my sleep. Currently making Teya more money than yesterday.">Software engineer with 5+ years building scalable backend systems in payment infrastructure and AI. Currently powering real-money transactions at Teya.</p>
     <div class="hero-links">
       <a class="hero-link primary" href="https://tahseenrahman.notion.site/Tahseen-Rahman-Resume-ae01040ae55f469b919d95963b1171b6" target="_blank">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -1117,26 +1298,26 @@
   <div class="stats-bar" id="statsBar">
     <div class="stat-card">
       <div class="stat-value">5+</div>
-      <div class="stat-label">Years Experience</div>
+      <div class="stat-label" data-brag="years of shipping without rollback">Years Experience</div>
     </div>
     <div class="stat-card">
       <div class="stat-value">25%</div>
-      <div class="stat-label">Company Revenue (DCC)</div>
+      <div class="stat-label" data-brag="literally a quarter of Teya's revenue. yeah. me.">Company Revenue (DCC)</div>
     </div>
     <div class="stat-card">
       <div class="stat-value">1M+</div>
-      <div class="stat-label">Daily Messages Handled</div>
+      <div class="stat-label" data-brag="more messages than your group chat. hourly.">Daily Messages Handled</div>
     </div>
     <div class="stat-card">
       <div class="stat-value">400%</div>
-      <div class="stat-label">User Growth (Interakt)</div>
+      <div class="stat-label" data-brag="4x'd the user base. math says thank you.">User Growth (Interakt)</div>
     </div>
   </div>
 
   <!-- Experience -->
   <div class="section" id="sectionExp">
     <div class="section-label"># experience</div>
-    <div class="section-title">Where I've shipped code</div>
+    <div class="section-title" data-brag="places I turned caffeine into revenue">Where I've shipped code</div>
 
     <div class="exp-card current">
       <div class="exp-header">
@@ -1144,12 +1325,12 @@
         <div class="exp-meta">Jul 2023 &mdash; Present &middot; Porto, Portugal / India (Remote)</div>
       </div>
       <ul class="exp-highlights">
-        <li>Built card schemes simulator (Visa, Mastercard, Amex) automating tests and cutting dev time</li>
-        <li>Implemented Dynamic Currency Conversion (DCC) <span class="exp-impact">~25% of total revenue</span></li>
-        <li>Payment pre-auth for hospitality &amp; rental with BASE24 BIC ISO message framing</li>
-        <li>Data encryption with AWS KMS + API idempotency via HMAC-SHA256</li>
-        <li>Automated payment reversal retry with exponential backoff</li>
-        <li>RabbitMQ connection pooling reducing network latency</li>
+        <li data-brag="Taught Visa how to do Visa. Schemes simulator automates what used to be painful manual testing.">Built card schemes simulator (Visa, Mastercard, Amex) automating tests and cutting dev time</li>
+        <li data-brag="Figured out how to legally charge tourists extra. DCC engine = <span class='exp-impact'>~25% of company revenue</span>. CFO still sends me Christmas cards.">Implemented Dynamic Currency Conversion (DCC) <span class="exp-impact">~25% of total revenue</span></li>
+        <li data-brag="Hand-rolled BASE24 BIC framing for pre-auth on hotels &amp; rentals. Yes, I know what a Data Element is.">Payment pre-auth for hospitality &amp; rental with BASE24 BIC ISO message framing</li>
+        <li data-brag="KMS for the crypto, HMAC-SHA256 for the idempotency. Double-charges? Not on my watch.">Data encryption with AWS KMS + API idempotency via HMAC-SHA256</li>
+        <li data-brag="If the scheme ghosts us, my retry logic is petty enough to try again (with exponential backoff, of course).">Automated payment reversal retry with exponential backoff</li>
+        <li data-brag="Pooled RabbitMQ connections so hard that latency filed a restraining order.">RabbitMQ connection pooling reducing network latency</li>
       </ul>
     </div>
 
@@ -1159,12 +1340,12 @@
         <div class="exp-meta">Nov 2021 &mdash; Jun 2023</div>
       </div>
       <ul class="exp-highlights">
-        <li>Led team of 5 building wallet system &mdash; shifted revenue from postpaid to prepaid with Stripe &amp; Razorpay</li>
-        <li>Built sandbox mode <span class="exp-impact">conversion time: 3-4 days &rarr; 0 days, +50% conversions</span></li>
-        <li>Redesigned billing service from scratch <span class="exp-impact">+37% revenue</span></li>
-        <li>Scaled CSV import from 1K rows (sync) to 1M rows (async) for enterprise clients</li>
-        <li>Search infra with Elasticsearch + Kafka &mdash; minutes to seconds, 50 req/s</li>
-        <li>Predefined replies system <span class="exp-impact">-30% FAQ response time</span></li>
+        <li data-brag="Ran a 5-person raid boss party that flipped the whole revenue model to prepaid. Stripe &amp; Razorpay both called me senpai.">Led team of 5 building wallet system &mdash; shifted revenue from postpaid to prepaid with Stripe &amp; Razorpay</li>
+        <li data-brag="Turned a 4-day onboarding into 0 days. Users literally teleport in now. <span class='exp-impact'>+50% conversions</span>.">Built sandbox mode <span class="exp-impact">conversion time: 3-4 days &rarr; 0 days, +50% conversions</span></li>
+        <li data-brag="Rewrote billing from scratch. Number went up. <span class='exp-impact'>+37% revenue</span>. Finance cried (happy tears).">Redesigned billing service from scratch <span class="exp-impact">+37% revenue</span></li>
+        <li data-brag="From 1K rows sync to 1M rows async. Enterprise clients used to wait, now they can't blink fast enough.">Scaled CSV import from 1K rows (sync) to 1M rows (async) for enterprise clients</li>
+        <li data-brag="Elasticsearch + Kafka glued together with spite. Minutes → seconds. 50 req/s laughs in my sleep.">Search infra with Elasticsearch + Kafka &mdash; minutes to seconds, 50 req/s</li>
+        <li data-brag="Predefined replies doing more emotional labor than a therapist. <span class='exp-impact'>-30% FAQ time</span>.">Predefined replies system <span class="exp-impact">-30% FAQ response time</span></li>
       </ul>
     </div>
 
@@ -1198,7 +1379,7 @@
   <!-- Payment Simulator -->
   <div class="section" id="sectionSim">
     <div class="section-label"># transactions</div>
-    <div class="section-title">Watch a card payment flow — the thing I actually build</div>
+    <div class="section-title" data-brag="the rails I live on. pay attention.">Watch a card payment flow — the thing I actually build</div>
     <p style="color:var(--muted); font-size:0.95rem; margin-bottom:20px; line-height:1.6;">
       This is a real-ish simulation of the payment rails Teya connects to. Click a scenario and watch an ISO 8583 message (the standard every card network speaks) travel acquirer → scheme → issuer and back. PAN masked, HMAC computed live in your browser.
     </p>
@@ -1249,7 +1430,7 @@
   <!-- Skills -->
   <div class="section" id="sectionSkills">
     <div class="section-label"># dependencies</div>
-    <div class="section-title">What I work with</div>
+    <div class="section-title" data-brag="tools that do what I tell them">What I work with</div>
     <div class="skills-grid">
       <span class="skill-tag primary">Python</span>
       <span class="skill-tag primary">Java</span>
@@ -1276,7 +1457,7 @@
   <!-- Freelance Projects -->
   <div class="section" id="sectionProjects">
     <div class="section-label"># side_projects</div>
-    <div class="section-title">What I build on my own time</div>
+    <div class="section-title" data-brag="yes I have side projects. yes they're in prod.">What I build on my own time</div>
     <div class="project-grid">
 
       <div class="proj-card">
@@ -1322,7 +1503,7 @@
   <!-- Publications -->
   <div class="section" id="sectionPubs">
     <div class="section-label"># publications</div>
-    <div class="section-title">What I've written about</div>
+    <div class="section-title" data-brag="receipts, published">What I've written about</div>
     <ul class="pub-list">
       <li><a href="https://tahseen-rahman.medium.com/six-coding-rules-i-follow-d27d8541dc25" target="_blank">Six Coding Rules I Follow</a></li>
       <li><a href="https://tahseen-rahman.medium.com/elasticstack-fd588287e321" target="_blank">How Elastic Can Be Elastic Stack</a></li>
@@ -1333,7 +1514,7 @@
   <!-- Education -->
   <div class="section" id="sectionEdu">
     <div class="section-label"># education</div>
-    <div class="section-title">Where it started</div>
+    <div class="section-title" data-brag="the origin story">Where it started</div>
     <div class="edu-card">
       <div class="edu-degree">B.Tech &mdash; Computer Science &amp; Engineering</div>
       <div class="edu-school">Indira Gandhi Institute of Technology</div>
@@ -1344,7 +1525,7 @@
   <!-- Footer -->
   <footer class="site-footer">
     <div class="footer-code">
-      <span class="comment"># Python by choice. Java by paycheck. Both in production.</span><br><br>
+      <span class="comment" data-brag="# Python by choice. Java by paycheck. Ego by default. All three in production."># Python by choice. Java by paycheck. Both in production.</span><br><br>
       <a href="mailto:tahseen.rahman@outlook.in">tahseen.rahman@outlook.in</a> &middot;
       <a href="https://www.linkedin.com/in/tahseen09" target="_blank">LinkedIn</a> &middot;
       <a href="https://github.com/tahseen09" target="_blank">GitHub</a> &middot;
@@ -1527,6 +1708,7 @@ const PORTFOLIO_DATA = {
     'Portfolio.resume()',
     'Portfolio.experience()',
     'Portfolio.secrets()',
+    'Portfolio.brag()   // 🔥 flip the alter ego',
   ];
   cmds.forEach(c => console.log('  %c> ' + c, 'color:#58a6ff;font-family:monospace;'));
   console.log('\n%cOr type %cimport tahseen_rahman as t%c in the terminal above — it\'s a real Python REPL.',
@@ -1844,6 +2026,27 @@ class _TahseenRahman:
         js.showPortfolio()
         return "→ opening full portfolio"
 
+    def brag(self, on=None):
+        """Engage the alter ego. All facts true; all humility gone."""
+        import js
+        next_on = (not js.BRAG.isActive()) if on is None else bool(on)
+        js.BRAG.setActive(next_on)
+        if next_on:
+            return (
+                "🔥 BRAG MODE ENGAGED\\n"
+                "   - built 25% of Teya's revenue (DCC engine)\\n"
+                "   - 1M+ messages handled daily, without a shrug\\n"
+                "   - scaled CSVs from 1K → 1M rows (async, obviously)\\n"
+                "   - Python by choice, Java by paycheck, ISO 8583 in my sleep\\n"
+                "   - yes I freelance. yes it's deployed. yes it has users.\\n"
+                "   (call t.brag(False) if you can't handle it.)"
+            )
+        return "humble again. for now."
+
+    def flex(self):
+        "Same as brag() but louder."
+        return self.brag(True)
+
 _t_instance = _TahseenRahman(_d)
 
 # Expose as a proper importable module
@@ -1852,7 +2055,7 @@ tahseen_rahman = types.ModuleType('tahseen_rahman')
 tahseen_rahman.__doc__ = _TahseenRahman.__doc__
 # Hoist attributes onto the module so \`import tahseen_rahman; tahseen_rahman.experience()\` works too.
 for _name in ['name','tagline','email','resume_url','github','linkedin','medium','current','stats',
-              'experience','skills','projects','publications','education','hire_me','resume','coffee_chat','open_portfolio']:
+              'experience','skills','projects','publications','education','hire_me','resume','coffee_chat','open_portfolio','brag','flex']:
     setattr(tahseen_rahman, _name, getattr(_t_instance, _name))
 sys.modules['tahseen_rahman'] = tahseen_rahman
 
@@ -2444,7 +2647,162 @@ const matrix = (function() {
   return { toggle };
 })();
 
-// ─── KONAMI CODE ───
+// ─── KONAMI CODE → handled below in BRAG section ───
+
+// ═══════════════════════════════════════════════════════════
+// BRAG MODE — the alter ego
+// ═══════════════════════════════════════════════════════════
+const BRAG = (function() {
+  const HOT_TAKES = [
+    { head: "on python", body: "my one true love. java's just for the W-2." },
+    { head: "on git", body: "my commit messages have therapy. they've worked through things." },
+    { head: "on code review", body: "I LGTM with intention. don't test me." },
+    { head: "on rabbitmq", body: "more like rabbitMINE. connection pools bow when I walk in." },
+    { head: "on iso 8583", body: "0200? I dream in DE fields. DE49? currency? easy. name a harder one." },
+    { head: "on payments", body: "I am the reason your tourist card worked in porto last summer. you're welcome." },
+    { head: "on side projects", body: "yes I have three. yes they're deployed. yes they have users." },
+    { head: "on stripe", body: "respectfully, I could've built it. probably faster. in django." },
+    { head: "on senior roles", body: "I don't gatekeep, I keep the gate open with documentation nobody reads." },
+    { head: "on 'it works on my machine'", body: "it actually does. that's the problem. it works in prod too. vanity metric unlocked." },
+    { head: "on impostor syndrome", body: "the impostor is the one competing with me. can't relate." },
+    { head: "on elasticsearch", body: "turned a minutes-long query into seconds. 50 req/s looks at me funny now." },
+    { head: "on dcc", body: "if you paid your hotel in your home currency abroad, that's me. I got a cut. thank you." },
+    { head: "on rollbacks", body: "never heard of her." },
+    { head: "on hiring managers", body: "Portfolio.hire_me(). run it. dare you." },
+    { head: "on this portfolio", body: "it's a real python repl. other portfolios are <marquee> tags. don't play." },
+    { head: "on freelance", body: "built an ICU management system on weekends. saved lives. didn't tweet about it." },
+    { head: "on billing systems", body: "redesigned one from scratch. revenue went +37%. math said ty." },
+    { head: "on rest apis", body: "idempotent by design. HMAC-SHA256. I read the spec, I wrote the spec in my head too." },
+    { head: "on 'do you know kafka'", body: "I made Kafka beg for my messages. 1M a day. easy." },
+  ];
+
+  const body = document.body;
+  const toggleBtn = document.getElementById('bragToggle');
+  const bubble = document.getElementById('hotTake');
+  const bubbleBody = document.getElementById('hotTakeBody');
+  const bubbleHead = bubble && bubble.querySelector('.hot-take-head span:last-child');
+  const closeBtn = bubble && bubble.querySelector('.hot-take-close');
+
+  let active = false;
+  let rotateTimer = null;
+  let hideTimer = null;
+  let usedIdx = new Set();
+
+  // Cache original text per element so we can swap back.
+  function collectSwappable() {
+    return Array.from(document.querySelectorAll('[data-brag]'));
+  }
+
+  function cacheOriginals() {
+    collectSwappable().forEach(el => {
+      if (!el.dataset.orig) el.dataset.orig = el.innerHTML;
+    });
+    const name = document.getElementById('heroName');
+    if (name && !name.dataset.origName) name.dataset.origName = name.dataset.text;
+  }
+
+  function swapText(on) {
+    collectSwappable().forEach(el => {
+      const orig = el.dataset.orig;
+      const brag = el.dataset.brag;
+      if (orig != null && brag != null) {
+        el.innerHTML = on ? brag : orig;
+      }
+    });
+    // Hero name scramble target
+    const name = document.getElementById('heroName');
+    if (name && name.dataset.bragText) {
+      const target = on ? name.dataset.bragText : (name.dataset.origName || 'Tahseen Rahman');
+      name.dataset.text = target;
+      // re-render spans
+      name.innerHTML = target.split('').map(c =>
+        c === ' ' ? '<span class="char">&nbsp;</span>' : `<span class="char">${c}</span>`
+      ).join('');
+    }
+  }
+
+  function pickNext() {
+    if (usedIdx.size >= HOT_TAKES.length) usedIdx.clear();
+    let i;
+    do { i = Math.floor(Math.random() * HOT_TAKES.length); } while (usedIdx.has(i));
+    usedIdx.add(i);
+    return HOT_TAKES[i];
+  }
+
+  function showTake() {
+    if (!bubble) return;
+    const t = pickNext();
+    bubbleHead.textContent = t.head;
+    bubbleBody.textContent = t.body;
+    bubble.classList.add('show');
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => bubble.classList.remove('show'), 6500);
+  }
+
+  function startRotator() {
+    stopRotator();
+    setTimeout(showTake, 800);
+    rotateTimer = setInterval(() => { if (active) showTake(); }, 9000);
+  }
+
+  function stopRotator() {
+    if (rotateTimer) { clearInterval(rotateTimer); rotateTimer = null; }
+    if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+    if (bubble) bubble.classList.remove('show');
+  }
+
+  function setActive(on, { silent = false } = {}) {
+    if (on === active) return;
+    active = on;
+    cacheOriginals();
+    body.classList.toggle('brag', on);
+    if (toggleBtn) {
+      toggleBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    }
+    swapText(on);
+
+    if (on) {
+      startRotator();
+      if (!silent) {
+        showToast('😤 brag mode engaged — all facts true, all humility gone');
+        // Fire a celebratory particle burst in the hero area
+        if (window.spawnBurst) {
+          const cx = window.innerWidth / 2, cy = window.innerHeight / 3;
+          ['248,81,73','210,153,34','255,107,157','255,200,87'].forEach((c, i) =>
+            setTimeout(() => window.spawnBurst(cx, cy, c, 24), i * 80)
+          );
+        }
+        document.body.classList.remove('shake');
+        void document.body.offsetWidth;
+        document.body.classList.add('shake');
+        setTimeout(() => document.body.classList.remove('shake'), 500);
+      }
+    } else {
+      stopRotator();
+      if (!silent) showToast('😇 back to being humble');
+    }
+  }
+
+  function toggle() { setActive(!active); }
+
+  if (toggleBtn) toggleBtn.addEventListener('click', toggle);
+  if (closeBtn) closeBtn.addEventListener('click', () => {
+    bubble.classList.remove('show');
+    clearTimeout(hideTimer);
+  });
+
+  // Hidden URL entry: ?brag=1
+  try {
+    if (new URLSearchParams(location.search).get('brag') === '1') {
+      setTimeout(() => setActive(true, { silent: false }), 2000);
+    }
+  } catch(_) {}
+
+  return { toggle, setActive, isActive: () => active, showTake };
+})();
+window.BRAG = BRAG; // exposed for Pyodide's `js` module
+
+// Hook Konami so it ALSO flips brag mode (still keeps rainbow as secondary)
 (function() {
   const seq = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
   let i = 0;
@@ -2454,16 +2812,26 @@ const matrix = (function() {
       i++;
       if (i === seq.length) {
         i = 0;
-        document.body.classList.toggle('rainbow');
-        showToast(document.body.classList.contains('rainbow')
-          ? '🌈 rainbow mode on — you found the cheat code'
-          : 'back to normal');
+        BRAG.toggle();
       }
     } else {
       i = (k === seq[0]) ? 1 : 0;
     }
   });
 })();
+
+// Expose on the console API
+if (window.Portfolio) {
+  window.Portfolio.brag = function(on) {
+    const next = typeof on === 'boolean' ? on : !BRAG.isActive();
+    BRAG.setActive(next);
+    if (next) {
+      console.log('%c🔥 BRAG MODE ENGAGED', 'background:linear-gradient(90deg,#f85149,#d29922);color:#fff;font-weight:700;padding:4px 10px;border-radius:4px;');
+      return '(all facts true · all humility gone)';
+    }
+    return '(humble again. for now.)';
+  };
+}
 
 // ─── TYPE "matrix" ANYWHERE ───
 (function() {
@@ -2480,7 +2848,7 @@ const _origShow = showPortfolio;
 showPortfolio = function() {
   _origShow();
   setTimeout(() => window._scrambleName && window._scrambleName(), 900);
-  setTimeout(() => showToast('tip: try the konami code ↑↑↓↓←→←→ba', 3500), 2600);
+  setTimeout(() => showToast('psst: there\'s a 😤 brag mode button up top. or type the konami code.', 3800), 2600);
 };
 
 // ═══════════════════════════════════════════════════════════
