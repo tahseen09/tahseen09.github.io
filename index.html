@@ -1367,45 +1367,43 @@
 
   .pay-device {
     position: relative;
-    width: 340px;
+    width: 100%;
+    max-width: 560px;
     background: linear-gradient(155deg, #2a2f38 0%, #1b1f27 55%, #14171e 100%);
-    border-radius: 28px;
-    padding: 16px 14px 22px;
+    border-radius: 30px;
+    padding: 18px 18px 26px;
     box-shadow:
       0 30px 60px rgba(0,0,0,0.55),
       0 0 0 1px rgba(255,255,255,0.04),
       inset 0 1px 0 rgba(255,255,255,0.08),
-      inset 0 -20px 40px rgba(0,0,0,0.3);
+      inset 0 -22px 44px rgba(0,0,0,0.32);
     justify-self: center;
     overflow: visible;
-  }
-  @media (max-width: 420px) {
-    .pay-device { width: 92%; max-width: 340px; }
   }
   /* Subtle brand strip at the bottom */
   .pay-device::after {
     content: 'TEYA';
     position: absolute;
-    bottom: 4px;
+    bottom: 7px;
     left: 50%;
     transform: translateX(-50%);
     font-family: var(--font-mono);
-    font-size: 0.52rem;
-    letter-spacing: 0.3em;
-    color: rgba(255,255,255,0.15);
+    font-size: 0.62rem;
+    letter-spacing: 0.35em;
+    color: rgba(255,255,255,0.18);
     font-weight: 700;
   }
 
   /* Printer slot at the top — the receipt emerges from here */
   .pay-slot {
     position: absolute;
-    top: 6px;
+    top: 7px;
     left: 50%;
     transform: translateX(-50%);
-    width: 70%;
-    height: 3px;
+    width: 68%;
+    height: 4px;
     background: #0a0d12;
-    border-radius: 3px;
+    border-radius: 4px;
     box-shadow:
       inset 0 1px 2px rgba(0,0,0,0.9),
       inset 0 -1px 0 rgba(255,255,255,0.04);
@@ -1417,7 +1415,7 @@
     bottom: calc(100% - 2px);
     left: 50%;
     transform: translateX(-50%);
-    width: 232px; /* fits within the 70%-width slot */
+    width: 360px;
     pointer-events: none;
     z-index: 5;
   }
@@ -1426,16 +1424,16 @@
   .pay-screen {
     background: #06080c;
     border: 1px solid #000;
-    border-radius: 12px;
+    border-radius: 14px;
     padding: 0;
-    margin-top: 10px;
+    margin-top: 14px;
     font-family: var(--font-mono);
     box-shadow:
       inset 0 2px 8px rgba(0,0,0,0.9),
       inset 0 0 0 1px rgba(255,255,255,0.03);
     display: flex;
     flex-direction: column;
-    min-height: 340px;
+    min-height: 440px;
     position: relative;
     overflow: hidden;
   }
@@ -1460,28 +1458,28 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 14px 10px;
-    gap: 10px;
+    padding: 16px 20px 12px;
+    gap: 12px;
   }
   .pay-screen-brand {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 0.66rem;
+    gap: 10px;
+    font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.22em;
     color: #39d2c0;
-    opacity: 0.85;
+    opacity: 0.9;
   }
   .pay-screen-chip {
-    font-size: 0.58rem;
+    font-size: 0.66rem;
     font-weight: 800;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.16em;
     color: #a8e4cf;
     background: rgba(57,210,192,0.12);
     border: 1px solid rgba(57,210,192,0.3);
-    padding: 3px 8px;
-    border-radius: 3px;
+    padding: 4px 10px;
+    border-radius: 4px;
     transition: all 0.25s;
   }
   .pay-screen.busy .pay-screen-chip {
@@ -1524,27 +1522,27 @@
   .pay-screen-divider {
     height: 1px;
     background: linear-gradient(90deg, transparent, rgba(57,210,192,0.22), transparent);
-    margin: 0 10px;
+    margin: 0 16px;
   }
 
   /* Body (idle or live) */
   .pay-screen-body {
     flex: 1;
-    padding: 14px 14px 10px;
+    padding: 20px 22px 14px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    min-height: 300px;
+    min-height: 340px;
   }
 
   .pay-screen-amount {
-    font-size: 2.2rem;
+    font-size: 2.8rem;
     font-weight: 700;
     color: #e8fff9;
     letter-spacing: 0.01em;
     text-shadow: 0 0 18px rgba(57,210,192,0.35);
     text-align: center;
-    margin-bottom: 14px;
+    margin-bottom: 18px;
     font-variant-numeric: tabular-nums;
     animation: amountIn 0.35s cubic-bezier(.2,.9,.3,1.3);
   }
@@ -1556,23 +1554,24 @@
   .pay-screen.fail .pay-screen-amount { color: #ffb5b1; text-shadow: 0 0 18px rgba(248,81,73,0.5); }
 
   .pay-screen-status {
-    font-size: 0.84rem;
+    font-size: 1rem;
     font-weight: 700;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.16em;
     color: #39d2c0;
     min-height: 1.3em;
     text-align: center;
     transition: color 0.2s;
+    margin-top: 6px;
   }
   .pay-screen.ok .pay-screen-status  { color: #3fb950; }
   .pay-screen.fail .pay-screen-status { color: #f85149; }
 
   .pay-screen-sub {
-    font-size: 0.72rem;
+    font-size: 0.8rem;
     color: rgba(255,255,255,0.55);
     min-height: 1.2em;
-    margin-top: 4px;
-    letter-spacing: 0.05em;
+    margin-top: 6px;
+    letter-spacing: 0.04em;
     text-align: center;
   }
 
@@ -1580,18 +1579,18 @@
   .pay-screen-foot {
     display: flex;
     align-items: baseline;
-    gap: 10px;
-    padding: 8px 14px 12px;
-    min-height: 34px;
+    gap: 12px;
+    padding: 12px 20px 16px;
+    min-height: 42px;
   }
   .pay-screen-foot-label {
     flex-shrink: 0;
-    font-size: 0.56rem;
+    font-size: 0.62rem;
     font-weight: 700;
     letter-spacing: 0.18em;
-    color: rgba(57,210,192,0.45);
-    padding: 2px 6px;
-    border: 1px solid rgba(57,210,192,0.2);
+    color: rgba(57,210,192,0.5);
+    padding: 3px 8px;
+    border: 1px solid rgba(57,210,192,0.22);
     border-radius: 3px;
   }
   .pay-screen.busy .pay-screen-foot-label { color: rgba(210,153,34,0.6); border-color: rgba(210,153,34,0.3); }
@@ -1599,10 +1598,10 @@
   .pay-screen.fail .pay-screen-foot-label { color: rgba(248,81,73,0.7);  border-color: rgba(248,81,73,0.4); }
 
   .pay-screen-foot-value {
-    font-size: 0.62rem;
-    color: rgba(255,255,255,0.42);
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.5);
     letter-spacing: 0.03em;
-    line-height: 1.35;
+    line-height: 1.4;
     word-break: break-all;
   }
   .pay-screen.ok .pay-screen-foot-value   { color: rgba(63,185,80,0.75); }
@@ -1613,7 +1612,7 @@
   .pay-screen-idle {
     display: flex;
     flex-direction: column;
-    gap: 7px;
+    gap: 10px;
     animation: panelIn 0.3s ease;
   }
   .pay-screen-live {
@@ -1624,22 +1623,22 @@
     to   { opacity: 1; transform: translateY(0); }
   }
   .pay-screen-prompt {
-    font-size: 0.58rem;
+    font-size: 0.68rem;
     letter-spacing: 0.22em;
     color: rgba(57,210,192,0.55);
     text-align: center;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
     font-weight: 700;
   }
   .pay-action {
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
+    gap: 14px;
+    padding: 14px 18px;
     background: linear-gradient(135deg, rgba(57,210,192,0.06), rgba(57,210,192,0.02));
     border: 1px solid rgba(57,210,192,0.22);
-    border-radius: 9px;
+    border-radius: 10px;
     color: #d0fff4;
     font-family: var(--font-mono);
     text-align: left;
@@ -1672,20 +1671,20 @@
     border-color: rgba(248,81,73,0.55);
     background: linear-gradient(135deg, rgba(248,81,73,0.15), rgba(248,81,73,0.05));
   }
-  .pay-action-icon { font-size: 1.4rem; line-height: 1; }
-  .pay-action-body { display: flex; flex-direction: column; gap: 1px; }
+  .pay-action-icon { font-size: 1.8rem; line-height: 1; }
+  .pay-action-body { display: flex; flex-direction: column; gap: 3px; }
   .pay-action-label {
-    font-size: 0.82rem;
+    font-size: 0.95rem;
     font-weight: 700;
-    letter-spacing: 0.06em;
-  }
-  .pay-action-sub {
-    font-size: 0.65rem;
-    color: rgba(255,255,255,0.45);
     letter-spacing: 0.04em;
   }
+  .pay-action-sub {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.03em;
+  }
   .pay-action-arrow {
-    font-size: 0.9rem;
+    font-size: 1.3rem;
     opacity: 0.5;
     transition: transform 0.2s, opacity 0.2s;
   }
@@ -1846,32 +1845,31 @@
   .pay-mini-pipe {
     display: flex;
     align-items: center;
-    gap: 2px;
-    padding: 8px 4px;
-    margin: 4px 0 8px;
+    gap: 4px;
+    padding: 12px 10px;
+    margin: 6px 0 12px;
     background: rgba(57,210,192,0.03);
     border: 1px solid rgba(57,210,192,0.12);
-    border-radius: 8px;
+    border-radius: 10px;
     overflow: visible;
   }
   .pay-mini-pipe .sim-node {
     flex: 1 1 0;
     min-width: 0;
-    padding: 4px 2px;
-    border-radius: 6px;
+    padding: 8px 4px;
+    border-radius: 8px;
     background: rgba(6,8,12,0.6);
     border: 1px solid rgba(255,255,255,0.04);
     text-align: center;
     position: relative;
     transition: all 0.25s;
   }
-  .pay-mini-pipe .sim-node-icon { font-size: 0.95rem; margin: 0; line-height: 1; }
+  .pay-mini-pipe .sim-node-icon { font-size: 1.2rem; margin: 0 0 3px; line-height: 1; }
   .pay-mini-pipe .sim-node-label {
-    font-size: 0.52rem;
+    font-size: 0.6rem;
     font-weight: 700;
-    color: rgba(255,255,255,0.55);
-    letter-spacing: 0.04em;
-    margin-top: 2px;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 0.05em;
   }
   .pay-mini-pipe .sim-node.active {
     background: rgba(57,210,192,0.18);
@@ -1892,9 +1890,9 @@
   /* Hide the verbose action-label bubbles in the mini view */
   .pay-mini-pipe .sim-node-action { display: none; }
   .pay-mini-pipe .sim-edge {
-    flex: 0 0 10px;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(57,210,192,0.25), transparent);
+    flex: 0 0 20px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(57,210,192,0.28), transparent);
     position: relative;
   }
   .pay-mini-pipe .sim-edge.active {
@@ -1903,44 +1901,45 @@
 
   /* Mini raw log inside the terminal */
   .pay-mini-log {
-    margin-top: 10px;
+    margin-top: 14px;
     background: rgba(0,0,0,0.4);
-    border: 1px solid rgba(57,210,192,0.1);
-    border-radius: 8px;
-    padding: 8px 10px;
-    font-size: 0.6rem;
-    line-height: 1.5;
-    color: rgba(255,255,255,0.55);
-    max-height: 80px;
-    min-height: 80px;
+    border: 1px solid rgba(57,210,192,0.12);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 0.7rem;
+    line-height: 1.55;
+    color: rgba(255,255,255,0.6);
+    max-height: 140px;
+    min-height: 140px;
     overflow-y: auto;
     font-family: var(--font-mono);
     position: relative;
-    mask-image: linear-gradient(to bottom, transparent 0, #000 16px, #000 100%);
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 16px, #000 100%);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 100%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 100%);
   }
-  .pay-mini-log::-webkit-scrollbar { width: 4px; }
-  .pay-mini-log::-webkit-scrollbar-thumb { background: rgba(57,210,192,0.2); border-radius: 2px; }
+  .pay-mini-log::-webkit-scrollbar { width: 5px; }
+  .pay-mini-log::-webkit-scrollbar-thumb { background: rgba(57,210,192,0.22); border-radius: 3px; }
   .pay-mini-log .sim-log-empty {
     color: rgba(255,255,255,0.3);
     text-align: center;
-    padding: 18px 0 0;
+    padding: 44px 0 0;
     font-style: italic;
   }
   .pay-mini-log .sim-log-entry {
-    padding: 1px 0;
+    padding: 2px 0;
     border-bottom: none;
     word-break: break-word;
   }
   .pay-mini-log .sim-log-head {
     color: var(--cyan);
     font-weight: 700;
-    font-size: 0.58rem;
+    font-size: 0.66rem;
     letter-spacing: 0.1em;
+    margin-top: 4px;
   }
-  .pay-mini-log .k { color: rgba(210,153,34,0.9); font-size: 0.58rem; }
-  .pay-mini-log .v { color: rgba(255,255,255,0.75); }
-  .pay-mini-log .c { color: rgba(125,133,144,0.75); }
+  .pay-mini-log .k { color: rgba(210,153,34,0.95); font-size: 0.66rem; }
+  .pay-mini-log .v { color: rgba(255,255,255,0.8); }
+  .pay-mini-log .c { color: rgba(125,133,144,0.8); }
 
   /* Network view disclosure */
   .sim-network-view {
