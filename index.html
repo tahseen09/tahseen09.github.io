@@ -1356,6 +1356,100 @@
     100% { left: 0%; opacity: 1; transform: translate(-50%, -50%) scale(1); }
   }
 
+  /* ── Receipt card ── */
+  .sim-receipt {
+    display: none;
+    margin: 0 auto 18px;
+    max-width: 360px;
+    perspective: 800px;
+  }
+  .sim-receipt.on { display: block; }
+  .sim-receipt-paper {
+    background: #faf6ef;
+    color: #2a2018;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    line-height: 1.55;
+    padding: 22px 24px 26px;
+    border-radius: 4px 4px 10px 10px;
+    box-shadow:
+      0 18px 50px rgba(0,0,0,0.45),
+      0 0 0 1px rgba(0,0,0,0.08),
+      inset 0 0 40px rgba(180,150,100,0.12);
+    position: relative;
+    transform-origin: top center;
+    animation: receiptDrop 0.55s cubic-bezier(.2,.9,.3,1.1) backwards;
+  }
+  @keyframes receiptDrop {
+    0%   { opacity: 0; transform: translateY(-18px) rotateX(-24deg) scale(0.98); }
+    60%  { opacity: 1; transform: translateY(4px)  rotateX(3deg)   scale(1.01); }
+    100% { opacity: 1; transform: translateY(0)    rotateX(0)       scale(1);    }
+  }
+  .sim-receipt-rule {
+    color: #9e896a;
+    letter-spacing: 1px;
+    text-align: center;
+    user-select: none;
+  }
+  .sim-receipt-brand {
+    text-align: center;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    font-size: 0.86rem;
+    margin: 4px 0 2px;
+  }
+  .sim-receipt-meta {
+    text-align: center;
+    font-size: 0.72rem;
+    color: #6b5a45;
+    margin-bottom: 10px;
+  }
+  .sim-receipt-body {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 14px;
+    margin: 10px 0;
+  }
+  .sim-receipt-body dt {
+    color: #6b5a45;
+    text-transform: uppercase;
+    font-size: 0.68rem;
+    letter-spacing: 0.05em;
+    align-self: center;
+  }
+  .sim-receipt-body dd {
+    color: #2a2018;
+    text-align: right;
+    font-weight: 600;
+  }
+  .sim-receipt-body dd.ok { color: #1b7a32; }
+  .sim-receipt-body dd.fail { color: #a4281f; }
+  .sim-receipt-foot {
+    text-align: center;
+    font-size: 0.74rem;
+    color: #6b5a45;
+    margin-top: 10px;
+    font-style: italic;
+  }
+  .sim-receipt-sig {
+    text-align: center;
+    font-size: 0.72rem;
+    color: #9e896a;
+    margin-top: 12px;
+    letter-spacing: 0.06em;
+  }
+  .sim-receipt-barcode {
+    display: flex;
+    justify-content: center;
+    gap: 2px;
+    margin: 10px 0 4px;
+  }
+  .sim-receipt-barcode span {
+    display: block;
+    width: 2px;
+    background: #2a2018;
+  }
+
   .sim-log {
     background: var(--terminal-bg);
     border: 1px solid var(--card-border);
@@ -1933,6 +2027,8 @@
         <div class="sim-node-action" data-action="done">done</div>
       </div>
     </div>
+
+    <div class="sim-receipt" id="simReceipt" aria-hidden="true"></div>
 
     <div class="sim-log" id="simLog">
       <div class="sim-log-empty">👆 tap the POS above or pick a scenario — watch the ISO 8583 bytes fly.</div>
@@ -3831,6 +3927,41 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
     edges.forEach(e => e.classList.remove('active', 'flowing', 'reverse', 'fail'));
   }
 
+  // ── Receipt renderer ──────────────────────────────────────
+  const receiptEl = document.getElementById('simReceipt');
+  function clearReceipt() {
+    if (!receiptEl) return;
+    receiptEl.classList.remove('on');
+    receiptEl.innerHTML = '';
+  }
+  function renderReceipt(data) {
+    if (!receiptEl) return;
+    const rule = '<div class="sim-receipt-rule">· · · · · · · · · · · · · · · ·</div>';
+    const bars = Array.from({length: 28}, () => {
+      const h = 14 + Math.random() * 14;
+      return `<span style="height:${h}px"></span>`;
+    }).join('');
+    const rows = data.rows.map(r => `<dt>${r.k}</dt><dd class="${r.cls || ''}">${r.v}</dd>`).join('');
+    receiptEl.innerHTML = `
+      <div class="sim-receipt-paper">
+        ${rule}
+        <div class="sim-receipt-brand">TEYA · PAYMENT TERMINAL</div>
+        <div class="sim-receipt-meta">${data.time} · ${data.location}</div>
+        ${rule}
+        <dl class="sim-receipt-body">${rows}</dl>
+        ${rule}
+        <div class="sim-receipt-foot">${data.footer}</div>
+        <div class="sim-receipt-barcode">${bars}</div>
+        <div class="sim-receipt-sig">TRN ${data.trn}</div>
+      </div>
+    `;
+    receiptEl.classList.add('on');
+  }
+  function nowStamp() {
+    const d = new Date();
+    return d.toTimeString().slice(0,5) + ' · ' + d.toISOString().slice(0,10);
+  }
+
   function restIdle() {
     // Return the POS node to its idle beckon state for the next visitor action.
     const pos = document.getElementById('posNode');
@@ -3937,6 +4068,21 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
     await activate(4, 'ok');
     nodes[4].classList.add('ok');
     kv('✓ Approved', 'total round-trip: ~380ms', 'ok');
+
+    renderReceipt({
+      time: nowStamp(),
+      location: 'PORTO · PT',
+      trn: id,
+      footer: 'Thank you. Have a nice day. 🫡',
+      rows: [
+        { k: 'Card', v: '4*** **** **** 1234' },
+        { k: 'Amount', v: '€ 42.00' },
+        { k: 'MTI', v: '0200 → 0210' },
+        { k: 'Auth code', v: 'A9FZ21', cls: 'ok' },
+        { k: 'Response', v: '00 · APPROVED', cls: 'ok' },
+        { k: 'STAN', v: s },
+      ],
+    });
   }
 
   async function runDcc() {
@@ -3976,40 +4122,118 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
     nodes[0].classList.add('ok'); nodes[0].classList.remove('active');
     await activate(4, 'ok');
     kv('✓ DCC commission captured:', '€1.05 <span class="c">(feeds the ~25% revenue figure above)</span>', 'ok');
+
+    renderReceipt({
+      time: nowStamp(),
+      location: 'PORTO · PT',
+      trn: trnId(),
+      footer: 'Paid in USD · Teya margin captured.',
+      rows: [
+        { k: 'Card', v: '4*** **** **** 1234 (US)' },
+        { k: 'Amount (home)', v: '$ 46.67 USD' },
+        { k: 'Amount (local)', v: '€ 42.00 EUR' },
+        { k: 'FX rate', v: '1.1113 USD/EUR' },
+        { k: 'MTI', v: '0200 → 0210' },
+        { k: 'Response', v: '00 · APPROVED', cls: 'ok' },
+        { k: 'Commission', v: '€ 1.05', cls: 'ok' },
+      ],
+    });
   }
 
   async function runDecline() {
+    const s = stan(), id = trnId();
     head('TRANSACTION: card purchase · $999.00');
     kv('[' + now() + ']', 'High-ticket amount');
     await activate(0);
+    kv('MTI:', '<span class="v">0200</span> <span class="c">(authorization request)</span>');
+    kv('DE4  Amount:', '000000099900 <span class="c">($999.00)</span>');
+    kv('DE11 STAN:', s);
     await flyPacket(0); await activate(1);
     await flyPacket(1); await activate(2);
     await flyPacket(2); await activate(3);
-    await sleep(400);
+    await sleep(350);
     comment('Issuer: velocity check failed (fraud signal)');
 
-    // fail path
+    // Failure propagates back through the pipeline in red
     nodes[3].classList.remove('active'); nodes[3].classList.add('fail');
     await flyPacket(3, { reverse: true, fail: true });
+    nodes[2].classList.remove('active'); nodes[2].classList.add('fail');
     await flyPacket(2, { reverse: true, fail: true });
+    nodes[1].classList.remove('active'); nodes[1].classList.add('fail');
     await flyPacket(1, { reverse: true, fail: true });
+    nodes[0].classList.remove('active'); nodes[0].classList.add('fail');
     await flyPacket(0, { reverse: true, fail: true });
+
     head('RESPONSE');
     kv('MTI:', '<span class="v">0210</span>', 'err');
     kv('DE39 Resp code:', '<span class="v">05</span> <span class="c">(do not honor)</span>', 'err');
-    nodes.forEach((n,i) => { if (i>0) { n.classList.remove('active','ok'); n.classList.add('fail'); } });
+    nodes[4].classList.add('fail');
 
-    await sleep(400);
+    await sleep(500);
+
+    // ── Animated reversal ─────────────────────────────────────
     head('REVERSAL (automatic)');
-    comment('Teya auto-reversal: prevent phantom auth hold on cardholder');
-    const delays = [1000, 2000, 4000];
-    for (let i = 0; i < delays.length; i++) {
-      kv(`attempt ${i+1}:`, `MTI=0420 retry at +${delays[i]}ms <span class="c">(exponential backoff)</span>`);
-      await sleep(500);
+    comment('Teya auto-reversal: acquirer initiates 0420 to release the auth hold.');
+    // Clear the fail halos on the rails — pipeline is about to light up with the reversal
+    nodes[0].classList.remove('fail');
+    nodes[1].classList.remove('fail');
+    nodes[2].classList.remove('fail');
+    nodes[3].classList.remove('fail');
+    nodes[4].classList.remove('fail');
+
+    const delays = [800, 1400, 2400]; // scaled for a demo; real prod is 1s/2s/4s
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      const isFinal = attempt === 3;
+      kv(`attempt ${attempt}:`, `MTI=0420 · backoff +${delays[attempt-1]}ms <span class="c">(exponential)</span>`);
+      await sleep(220);
+
+      // Acquirer → Scheme
+      await activate(1);
+      await flyPacket(1);
+      await activate(2);
+      await flyPacket(2);
+
+      if (!isFinal) {
+        // Timeout before reaching issuer
+        nodes[2].classList.add('fail');
+        await sleep(260);
+        kv('  result:', `<span class="v">timeout</span> <span class="c">(no response from scheme)</span>`, 'err');
+        // Reset for next attempt
+        nodes[1].classList.remove('active');
+        nodes[2].classList.remove('active', 'fail');
+        await sleep(200);
+      } else {
+        // Final attempt reaches the issuer and is accepted
+        await activate(3);
+        await sleep(300);
+        nodes[3].classList.add('ok'); nodes[3].classList.remove('active');
+        kv('  issuer:', 'MTI 0430 · <span class="v">00</span> reversal accepted', 'ok');
+        // Response flies back: issuer → scheme → acquirer
+        await flyPacket(2, { reverse: true });
+        nodes[2].classList.add('ok'); nodes[2].classList.remove('active');
+        await flyPacket(1, { reverse: true });
+        nodes[1].classList.add('ok'); nodes[1].classList.remove('active');
+        nodes[4].classList.add('ok');
+      }
     }
-    kv('MTI 0430 response:', '00 <span class="c">(reversal accepted)</span>', 'ok');
-    nodes[4].classList.remove('fail'); nodes[4].classList.add('ok');
+
     kv('✓ Auth hold released', 'cardholder statement: clean', 'ok');
+
+    renderReceipt({
+      time: nowStamp(),
+      location: 'PORTO · PT',
+      trn: id,
+      footer: 'Declined by issuer · auto-reversed · no funds captured.',
+      rows: [
+        { k: 'Card', v: '4*** **** **** 1234' },
+        { k: 'Amount', v: '€ 999.00' },
+        { k: 'MTI', v: '0200 → 0210 → 0420 → 0430' },
+        { k: 'Response', v: '05 · DO NOT HONOR', cls: 'fail' },
+        { k: 'Reversal', v: 'OK · 3rd attempt', cls: 'ok' },
+        { k: 'Retries', v: '0.8s → 1.4s → 2.4s' },
+        { k: 'STAN', v: s },
+      ],
+    });
   }
 
   async function run(scenario) {
@@ -4017,6 +4241,7 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
     running = true;
     buttons.forEach(b => b.disabled = true);
     clearPipeline();
+    clearReceipt();
     log.innerHTML = '';
     try {
       if (scenario === 'approve') {
