@@ -1534,7 +1534,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    min-height: 230px;
+    min-height: 300px;
   }
 
   .pay-screen-amount {
@@ -1841,6 +1841,106 @@
   @keyframes payReceiptExit {
     to { transform: translateY(-260%) rotate(-1deg); opacity: 0; }
   }
+
+  /* Mini pipeline inside the terminal screen */
+  .pay-mini-pipe {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 8px 4px;
+    margin: 4px 0 8px;
+    background: rgba(57,210,192,0.03);
+    border: 1px solid rgba(57,210,192,0.12);
+    border-radius: 8px;
+    overflow: visible;
+  }
+  .pay-mini-pipe .sim-node {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 4px 2px;
+    border-radius: 6px;
+    background: rgba(6,8,12,0.6);
+    border: 1px solid rgba(255,255,255,0.04);
+    text-align: center;
+    position: relative;
+    transition: all 0.25s;
+  }
+  .pay-mini-pipe .sim-node-icon { font-size: 0.95rem; margin: 0; line-height: 1; }
+  .pay-mini-pipe .sim-node-label {
+    font-size: 0.52rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+  }
+  .pay-mini-pipe .sim-node.active {
+    background: rgba(57,210,192,0.18);
+    border-color: rgba(57,210,192,0.6);
+    box-shadow: 0 0 10px rgba(57,210,192,0.35);
+  }
+  .pay-mini-pipe .sim-node.active .sim-node-label { color: #a8e4cf; }
+  .pay-mini-pipe .sim-node.ok {
+    background: rgba(63,185,80,0.15);
+    border-color: rgba(63,185,80,0.5);
+  }
+  .pay-mini-pipe .sim-node.ok .sim-node-label { color: #bff2c0; }
+  .pay-mini-pipe .sim-node.fail {
+    background: rgba(248,81,73,0.15);
+    border-color: rgba(248,81,73,0.5);
+  }
+  .pay-mini-pipe .sim-node.fail .sim-node-label { color: #ffcfcb; }
+  /* Hide the verbose action-label bubbles in the mini view */
+  .pay-mini-pipe .sim-node-action { display: none; }
+  .pay-mini-pipe .sim-edge {
+    flex: 0 0 10px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(57,210,192,0.25), transparent);
+    position: relative;
+  }
+  .pay-mini-pipe .sim-edge.active {
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  }
+
+  /* Mini raw log inside the terminal */
+  .pay-mini-log {
+    margin-top: 10px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(57,210,192,0.1);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 0.6rem;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.55);
+    max-height: 80px;
+    min-height: 80px;
+    overflow-y: auto;
+    font-family: var(--font-mono);
+    position: relative;
+    mask-image: linear-gradient(to bottom, transparent 0, #000 16px, #000 100%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 16px, #000 100%);
+  }
+  .pay-mini-log::-webkit-scrollbar { width: 4px; }
+  .pay-mini-log::-webkit-scrollbar-thumb { background: rgba(57,210,192,0.2); border-radius: 2px; }
+  .pay-mini-log .sim-log-empty {
+    color: rgba(255,255,255,0.3);
+    text-align: center;
+    padding: 18px 0 0;
+    font-style: italic;
+  }
+  .pay-mini-log .sim-log-entry {
+    padding: 1px 0;
+    border-bottom: none;
+    word-break: break-word;
+  }
+  .pay-mini-log .sim-log-head {
+    color: var(--cyan);
+    font-weight: 700;
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+  }
+  .pay-mini-log .k { color: rgba(210,153,34,0.9); font-size: 0.58rem; }
+  .pay-mini-log .v { color: rgba(255,255,255,0.75); }
+  .pay-mini-log .c { color: rgba(125,133,144,0.75); }
 
   /* Network view disclosure */
   .sim-network-view {
@@ -2526,7 +2626,7 @@
     </p>
 
     <div class="pay-stage">
-      <!-- ── Payment terminal device ── -->
+      <!-- ── Payment terminal device (left column) ── -->
       <div class="pay-device" id="payDevice">
         <!-- Printer slot at the top; the receipt emerges from here -->
         <div class="pay-slot" aria-hidden="true"></div>
@@ -2576,8 +2676,39 @@
 
             <div class="pay-screen-live" id="payLive" hidden>
               <div class="pay-screen-amount" id="payAmount">€ 0.00</div>
+              <!-- Mini network flow — lives INSIDE the terminal -->
+              <div class="sim-pipeline pay-mini-pipe" id="simPipeline">
+                <div class="sim-node" data-node="0" id="posNode">
+                  <div class="sim-node-icon">💳</div>
+                  <div class="sim-node-label">POS</div>
+                </div>
+                <div class="sim-edge" data-edge="0"><div class="sim-packet"></div></div>
+                <div class="sim-node" data-node="1">
+                  <div class="sim-node-icon">🏦</div>
+                  <div class="sim-node-label">Acq</div>
+                </div>
+                <div class="sim-edge" data-edge="1"><div class="sim-packet"></div></div>
+                <div class="sim-node" data-node="2">
+                  <div class="sim-node-icon">🌐</div>
+                  <div class="sim-node-label">Scheme</div>
+                </div>
+                <div class="sim-edge" data-edge="2"><div class="sim-packet"></div></div>
+                <div class="sim-node" data-node="3">
+                  <div class="sim-node-icon">🏛️</div>
+                  <div class="sim-node-label">Issuer</div>
+                </div>
+                <div class="sim-edge" data-edge="3"><div class="sim-packet"></div></div>
+                <div class="sim-node" data-node="4">
+                  <div class="sim-node-icon">✅</div>
+                  <div class="sim-node-label">auth</div>
+                </div>
+              </div>
               <div class="pay-screen-status" id="payStatus">READY</div>
               <div class="pay-screen-sub" id="paySub">pick a scenario</div>
+              <!-- Scrolling raw log — the detail stream for the curious -->
+              <div class="sim-log pay-mini-log" id="simLog">
+                <div class="sim-log-empty">pick a scenario — raw ISO 8583 stream will scroll here</div>
+              </div>
             </div>
           </div>
 
@@ -2586,54 +2717,11 @@
           <!-- Footer: always reserved — idle hint or live raw code -->
           <div class="pay-screen-foot">
             <span class="pay-screen-foot-label" id="payFootLabel">HINT</span>
-            <span class="pay-screen-foot-value" id="payCode">open the network flow below for the full ISO 8583 log</span>
+            <span class="pay-screen-foot-value" id="payCode">pick a scenario above to see raw ISO 8583 bytes here</span>
           </div>
         </div>
       </div>
     </div>
-
-    <details class="sim-network-view">
-      <summary>show the network flow (ISO 8583 rails)</summary>
-      <div class="sim-pipeline" id="simPipeline">
-        <div class="sim-node" data-node="0" id="posNode">
-          <div class="sim-node-icon">💳</div>
-          <div class="sim-node-label">POS</div>
-          <div class="sim-node-sub">Terminal</div>
-          <div class="sim-node-action" data-action="tapping">tapping</div>
-        </div>
-        <div class="sim-edge" data-edge="0"><div class="sim-packet"></div></div>
-        <div class="sim-node" data-node="1">
-          <div class="sim-node-icon">🏦</div>
-          <div class="sim-node-label">Acquirer</div>
-          <div class="sim-node-sub">Teya</div>
-          <div class="sim-node-action" data-action="routing">routing</div>
-        </div>
-        <div class="sim-edge" data-edge="1"><div class="sim-packet"></div></div>
-        <div class="sim-node" data-node="2">
-          <div class="sim-node-icon">🌐</div>
-          <div class="sim-node-label">Scheme</div>
-          <div class="sim-node-sub">Visa</div>
-          <div class="sim-node-action" data-action="switching">switching</div>
-        </div>
-        <div class="sim-edge" data-edge="2"><div class="sim-packet"></div></div>
-        <div class="sim-node" data-node="3">
-          <div class="sim-node-icon">🏛️</div>
-          <div class="sim-node-label">Issuer</div>
-          <div class="sim-node-sub">Bank</div>
-          <div class="sim-node-action" data-action="deciding">deciding</div>
-        </div>
-        <div class="sim-edge" data-edge="3"><div class="sim-packet"></div></div>
-        <div class="sim-node" data-node="4">
-          <div class="sim-node-icon">✅</div>
-          <div class="sim-node-label">Response</div>
-          <div class="sim-node-sub">auth</div>
-          <div class="sim-node-action" data-action="done">done</div>
-        </div>
-      </div>
-      <div class="sim-log" id="simLog">
-        <div class="sim-log-empty">raw ISO 8583 message log appears here when a scenario runs.</div>
-      </div>
-    </details>
   </div>
 
   <!-- Skills -->
