@@ -1202,7 +1202,322 @@
   .sim-log-entry.ok .k { color: var(--green); }
   .sim-log-entry.err .k { color: var(--red); }
 
+  /* ── AI Match Engine ── */
+  .match-box {
+    background: linear-gradient(135deg, var(--card-bg), rgba(88,166,255,0.03));
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .match-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(600px circle at var(--bx, 50%) var(--by, 0%), rgba(88,166,255,0.08), transparent 40%);
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .match-input {
+    width: 100%;
+    background: var(--terminal-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    color: var(--white);
+    font-family: var(--font-mono);
+    font-size: 0.88rem;
+    padding: 14px 16px;
+    resize: vertical;
+    min-height: 140px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    line-height: 1.6;
+  }
+  .match-input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(88,166,255,0.12);
+  }
+  .match-input::placeholder { color: var(--muted); }
+
+  .match-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .match-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--card-border);
+    background: var(--card-bg);
+    color: var(--white);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .match-btn:hover:not(:disabled) {
+    border-color: var(--blue);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(88,166,255,0.15);
+  }
+  .match-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .match-btn.primary {
+    background: linear-gradient(135deg, #58a6ff, #39d2c0);
+    border-color: transparent;
+    color: #0a0e17;
+    font-weight: 700;
+  }
+  .match-btn.primary:hover:not(:disabled) {
+    box-shadow: 0 10px 28px rgba(88,166,255,0.4);
+  }
+  .match-btn.ghost {
+    background: transparent;
+    color: var(--muted);
+  }
+  .match-btn-icon { font-size: 1rem; }
+  .match-meta {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+
+  .match-thinking {
+    display: none;
+    align-items: center;
+    gap: 14px;
+    margin-top: 20px;
+    padding: 18px 20px;
+    background: rgba(88,166,255,0.04);
+    border-left: 3px solid var(--blue);
+    border-radius: 0 10px 10px 0;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .match-thinking.on { display: flex; }
+  .match-thinking-dots { display: flex; gap: 5px; }
+  .match-thinking-dots span {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--blue);
+    animation: thinkBounce 1.4s ease-in-out infinite;
+  }
+  .match-thinking-dots span:nth-child(2) { animation-delay: 0.15s; }
+  .match-thinking-dots span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes thinkBounce {
+    0%, 80%, 100% { transform: scale(0.7); opacity: 0.5; }
+    40% { transform: scale(1.1); opacity: 1; }
+  }
+
+  .match-results { margin-top: 20px; }
+  .match-results:empty { display: none; }
+  .match-reveal {
+    opacity: 0;
+    transform: translateY(8px);
+    animation: matchIn 0.4s cubic-bezier(.2,.9,.3,1.3) forwards;
+  }
+  @keyframes matchIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .match-score {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 16px;
+    align-items: center;
+    padding: 20px 22px;
+    background: var(--terminal-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    margin-bottom: 18px;
+  }
+  .match-score-pct {
+    font-family: var(--font-mono);
+    font-size: 2.4rem;
+    font-weight: 900;
+    line-height: 1;
+    background: linear-gradient(135deg, #58a6ff, #39d2c0, #3fb950);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .match-score-bar {
+    height: 10px;
+    background: #21262d;
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+  }
+  .match-score-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #58a6ff, #39d2c0, #3fb950);
+    border-radius: 6px;
+    transition: width 1.2s cubic-bezier(.2,.9,.3,1);
+    box-shadow: 0 0 12px rgba(57,210,192,0.5);
+  }
+  .match-score-label {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .match-score-verdict {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-align: right;
+  }
+  .match-score-verdict.strong { color: var(--green); }
+  .match-score-verdict.solid { color: var(--cyan); }
+  .match-score-verdict.partial { color: var(--yellow); }
+  .match-score-verdict.low { color: var(--muted); }
+
+  .match-panel {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 14px;
+  }
+  .match-panel h4 {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--cyan);
+    margin-bottom: 12px;
+  }
+  .match-skill {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px dashed rgba(125,133,144,0.1);
+  }
+  .match-skill:last-child { border-bottom: none; }
+  .match-skill-check {
+    color: var(--green);
+    font-weight: 700;
+    font-family: var(--font-mono);
+    flex-shrink: 0;
+  }
+  .match-skill-name {
+    font-weight: 600;
+    color: var(--white);
+    min-width: 100px;
+  }
+  .match-skill-hits {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--yellow);
+    background: rgba(210,153,34,0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .match-skill-evidence {
+    color: #b1bac4;
+    font-size: 0.88rem;
+    flex: 1;
+  }
+
+  .match-bullet {
+    padding: 10px 0 10px 22px;
+    position: relative;
+    color: #b1bac4;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    border-bottom: 1px dashed rgba(125,133,144,0.1);
+  }
+  .match-bullet:last-child { border-bottom: none; }
+  .match-bullet-num {
+    position: absolute;
+    left: 0;
+    top: 10px;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--cyan);
+  }
+  .match-bullet-co {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-left: 8px;
+  }
+
+  .match-email {
+    background: var(--terminal-bg);
+    border: 1px solid var(--card-border);
+    border-left: 3px solid var(--green);
+    border-radius: 0 10px 10px 0;
+    padding: 16px 20px;
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+    line-height: 1.6;
+    color: #e6edf3;
+    position: relative;
+    white-space: pre-wrap;
+  }
+  .match-email-copy {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: transparent;
+    border: 1px solid var(--card-border);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .match-email-copy:hover {
+    border-color: var(--green);
+    color: var(--green);
+  }
+  .match-email-copy.copied {
+    border-color: var(--green);
+    background: rgba(63,185,80,0.1);
+    color: var(--green);
+  }
+
+  .match-cta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+    justify-content: center;
+  }
+
+  .match-miss {
+    padding: 8px 0;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .match-miss .tag {
+    color: var(--yellow);
+    background: rgba(210,153,34,0.08);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-right: 6px;
+  }
+
   @media (max-width: 640px) {
+    .match-score { grid-template-columns: 1fr; text-align: center; }
+    .match-score-verdict { text-align: center; }
+    .match-meta { margin-left: 0; order: 99; flex-basis: 100%; }
     .sim-node { min-width: 68px; padding: 10px 6px; }
     .sim-node-icon { font-size: 1.3rem; }
     .sim-node-label { font-size: 0.72rem; }
@@ -1311,6 +1626,35 @@
     <div class="stat-card">
       <div class="stat-value">400%</div>
       <div class="stat-label" data-brag="4x'd the user base. math says thank you.">User Growth (Interakt)</div>
+    </div>
+  </div>
+
+  <!-- AI Match Engine -->
+  <div class="section" id="sectionMatch">
+    <div class="section-label"># ai_match</div>
+    <div class="section-title" data-brag="paste the JD. I'll match myself to it. I dare you.">Hiring? Drop your JD and I'll match myself to it</div>
+    <p style="color:var(--muted); font-size:0.95rem; margin-bottom:20px; line-height:1.6;">
+      Built-in recruiter tool. Paste the job description → I tokenize it, score it against my actual skills &amp; shipped work, rank my most relevant accomplishments, and draft an opening line you can copy. Runs entirely in your browser — no black-box API, every citation is traceable back to a bullet on this page.
+    </p>
+
+    <div class="match-box">
+      <textarea id="jdInput" class="match-input" rows="6" placeholder="Paste the role description here… (or click 'try a sample JD' below)" spellcheck="false"></textarea>
+      <div class="match-actions">
+        <button id="matchBtn" class="match-btn primary" type="button">
+          <span class="match-btn-icon">🧠</span>
+          <span class="match-btn-text">analyze</span>
+        </button>
+        <button id="matchSampleBtn" class="match-btn" type="button">try a sample JD</button>
+        <button id="matchClearBtn" class="match-btn ghost" type="button">clear</button>
+        <span class="match-meta">powered by on-device token matching · zero data leaves your tab</span>
+      </div>
+
+      <div class="match-thinking" id="matchThinking">
+        <div class="match-thinking-dots"><span></span><span></span><span></span></div>
+        <div class="match-thinking-text" id="matchThinkingText">tokenizing…</div>
+      </div>
+
+      <div class="match-results" id="matchResults"></div>
     </div>
   </div>
 
@@ -1655,6 +1999,18 @@ const PORTFOLIO_DATA = {
     stats() { return d.stats; },
     experience() { return d.experience; },
     skills() { return d.skills; },
+    match(jd) {
+      if (!window.matchJD) return 'match engine not loaded yet';
+      const a = window.matchJD(jd);
+      if (!a) return 'pass a non-empty JD string';
+      return {
+        pct: a.pct,
+        verdict: a.verdict.label,
+        matched: a.matched.map(m => [m.skill, m.hits]),
+        top_bullets: a.topHighlights.map(h => `${h.text} — ${h.company}`),
+        opener: a.opener,
+      };
+    },
     from(referrer) {
       const messages = {
         hn: "👋 welcome from Hacker News. The REPL is real — try `import tahseen_rahman as t`.",
@@ -1704,6 +2060,7 @@ const PORTFOLIO_DATA = {
   console.log('\n%cTry these in the console:', 'color:#e6edf3;font-weight:600;');
   const cmds = [
     'Portfolio.hire_me("Senior Backend")',
+    'Portfolio.match(yourJdString)   // 🧠 on-device JD match',
     'Portfolio.coffee_chat()',
     'Portfolio.resume()',
     'Portfolio.experience()',
@@ -2047,6 +2404,25 @@ class _TahseenRahman:
         "Same as brag() but louder."
         return self.brag(True)
 
+    def match(self, jd):
+        """
+        Paste a job description and get a match analysis.
+
+        Returns a dict: {pct, verdict, matched_skills, top_bullets, opener}.
+        Runs the same on-device match engine the recruiter panel uses.
+        """
+        import js
+        result = js.matchJD(jd).to_py() if jd and jd.strip() else None
+        if not result:
+            return "provide a non-empty JD string"
+        return {
+            "pct": result["pct"],
+            "verdict": result["verdict"]["label"],
+            "matched_skills": [(s["skill"], s["hits"]) for s in result["matched"]],
+            "top_bullets": [f"{b['text']} — {b['company']}" for b in result["topHighlights"]],
+            "opener": result["opener"],
+        }
+
 _t_instance = _TahseenRahman(_d)
 
 # Expose as a proper importable module
@@ -2055,7 +2431,7 @@ tahseen_rahman = types.ModuleType('tahseen_rahman')
 tahseen_rahman.__doc__ = _TahseenRahman.__doc__
 # Hoist attributes onto the module so \`import tahseen_rahman; tahseen_rahman.experience()\` works too.
 for _name in ['name','tagline','email','resume_url','github','linkedin','medium','current','stats',
-              'experience','skills','projects','publications','education','hire_me','resume','coffee_chat','open_portfolio','brag','flex']:
+              'experience','skills','projects','publications','education','hire_me','resume','coffee_chat','open_portfolio','brag','flex','match']:
     setattr(tahseen_rahman, _name, getattr(_t_instance, _name))
 sys.modules['tahseen_rahman'] = tahseen_rahman
 
@@ -2850,6 +3226,389 @@ showPortfolio = function() {
   setTimeout(() => window._scrambleName && window._scrambleName(), 900);
   setTimeout(() => showToast('psst: there\'s a 😤 brag mode button up top. or type the konami code.', 3800), 2600);
 };
+
+// ═══════════════════════════════════════════════════════════
+// AI MATCH ENGINE — paste JD, get relevance analysis
+// On-device token matching with a curated skill/evidence graph.
+// ═══════════════════════════════════════════════════════════
+(function() {
+  const input = document.getElementById('jdInput');
+  const btn = document.getElementById('matchBtn');
+  const sampleBtn = document.getElementById('matchSampleBtn');
+  const clearBtn = document.getElementById('matchClearBtn');
+  const thinking = document.getElementById('matchThinking');
+  const thinkingText = document.getElementById('matchThinkingText');
+  const results = document.getElementById('matchResults');
+  if (!input || !btn) return;
+
+  // ── Skill graph: aliases, weight, and evidence grounded in real work ──
+  const SKILL_GRAPH = [
+    { skill: 'Python', weight: 1.2, aliases: ['python','py','python3','cpython'],
+      evidence: '5+ yrs daily driver. Teya payment services, Interakt billing, Compile ETL, Saarthi ML pipelines.' },
+    { skill: 'Java', weight: 1.0, aliases: ['java','jvm','jdk','openjdk'],
+      evidence: 'Production Java at Teya for card auth + scheme framing. "Java by paycheck."' },
+    { skill: 'JavaScript', weight: 0.8, aliases: ['javascript','js','typescript','ts','node','nodejs','node.js'],
+      evidence: 'Vue.js at Interakt. Vanilla JS (this page is 2700 hand-written lines of it).' },
+    { skill: 'Django', weight: 1.0, aliases: ['django','drf','django rest framework'],
+      evidence: 'Compile schema-viz app, Interakt billing service, 3 shipped freelance apps.' },
+    { skill: 'Flask', weight: 0.9, aliases: ['flask'],
+      evidence: 'Lighter-weight services at Saarthi and Compile.' },
+    { skill: 'Spring Boot', weight: 0.9, aliases: ['spring','springboot','spring boot','spring-boot','spring framework'],
+      evidence: 'Teya payment services run on Spring Boot.' },
+    { skill: 'Kafka', weight: 1.1, aliases: ['kafka','apache kafka','event streaming','event-driven'],
+      evidence: 'Search infra at Interakt: Elasticsearch + Kafka, minutes → seconds @ 50 req/s.' },
+    { skill: 'RabbitMQ', weight: 1.0, aliases: ['rabbitmq','rabbit mq','amqp'],
+      evidence: 'Teya: connection pooling rewrite reducing network latency across services.' },
+    { skill: 'Elasticsearch', weight: 1.0, aliases: ['elasticsearch','elastic','opensearch','search engine'],
+      evidence: 'Interakt search infra. Saarthi analytics dashboard with Elastic Stack.' },
+    { skill: 'PostgreSQL', weight: 0.9, aliases: ['postgres','postgresql','psql','rds'],
+      evidence: 'Primary relational store at Teya + Interakt.' },
+    { skill: 'MongoDB', weight: 0.8, aliases: ['mongo','mongodb','document db'],
+      evidence: 'Used at Interakt for semi-structured conversation data.' },
+    { skill: 'Snowflake', weight: 0.9, aliases: ['snowflake','data warehouse','warehouse'],
+      evidence: 'Compile: built a schema visualization + YAML-to-SQL parser on top of Snowflake.' },
+    { skill: 'Spark', weight: 1.0, aliases: ['spark','pyspark','apache spark'],
+      evidence: 'Compile: ETL pipelines for US healthcare data with PySpark.' },
+    { skill: 'AWS', weight: 1.1, aliases: ['aws','amazon web services','ec2','s3','lambda','rds','kms','sqs'],
+      evidence: 'Teya: AWS KMS for card-data encryption. General infra across roles.' },
+    { skill: 'Azure', weight: 0.7, aliases: ['azure','microsoft azure'],
+      evidence: 'Cross-cloud familiarity.' },
+    { skill: 'Payments', weight: 1.5, aliases: ['payment','payments','iso 8583','iso8583','base24','acquiring','issuing','card','schemes','visa','mastercard','amex','stripe','razorpay','dcc','fx','pci','pci-dss','pci dss','3ds','sca','auth','authorization','pre-auth','reversal','settlement'],
+      evidence: '2+ years deep: DCC engine at Teya (~25% of company revenue), BASE24 ISO 8583 framing, HMAC-SHA256 idempotency, scheme simulators, reversal retry with exponential backoff.' },
+    { skill: 'Backend', weight: 1.2, aliases: ['backend','back-end','back end','server-side','server side','microservices','distributed'],
+      evidence: '5+ yrs exclusively backend. Distributed payment systems, search infra, ETL, APIs.' },
+    { skill: 'API design', weight: 1.0, aliases: ['api','apis','rest','restful','graphql','http'],
+      evidence: 'Idempotent REST at Teya (HMAC-SHA256 keys). Billing APIs at Interakt. OpenAPI specs.' },
+    { skill: 'System design', weight: 1.1, aliases: ['system design','architecture','high scale','scalable','scaling','high-throughput','throughput','performance'],
+      evidence: 'Scaled CSV import 1K → 1M rows async. Search minutes → seconds @ 50 req/s. Redesigned billing, +37% revenue.' },
+    { skill: 'Leadership', weight: 1.0, aliases: ['lead','leader','leadership','mentor','tech lead','team lead','manage','managing','management'],
+      evidence: 'Led 5-person team at Interakt to build the wallet + shift revenue model from postpaid to prepaid.' },
+    { skill: 'AI / ML', weight: 1.2, aliases: ['ai','artificial intelligence','ml','machine learning','llm','llms','genai','gen ai','generative ai','model','embedding','embeddings','rag','retrieval','vision','cv','computer vision','nlp','transformer','transformers'],
+      evidence: 'Saarthi: ML training + prediction pipelines for chatbots. Current freelance ICU system: AI vitals extraction from monitor photos. Actively shipping AI features.' },
+    { skill: 'Testing', weight: 0.9, aliases: ['test','testing','pytest','unit test','integration test','tdd','test-driven'],
+      evidence: 'Built the Teya card schemes simulator — an automated testing harness replacing manual test flows.' },
+    { skill: 'Docker / K8s', weight: 0.9, aliases: ['docker','container','containers','kubernetes','k8s','helm'],
+      evidence: 'Containerized deploys across all roles. Standard kit.' },
+    { skill: 'CI/CD', weight: 0.8, aliases: ['ci','cd','ci/cd','jenkins','github actions','gitlab ci','pipeline','pipelines','deploy','deployment'],
+      evidence: 'Shipping in prod ~daily for 5+ years. Build + deploy pipelines across every role.' },
+    { skill: 'Observability', weight: 0.8, aliases: ['observability','monitoring','grafana','prometheus','metrics','alerting','alerts','dashboards','logs','logging'],
+      evidence: 'Grafana dashboards at Teya. Analytics dashboards with Elastic Stack at Saarthi.' },
+    { skill: 'Security', weight: 1.0, aliases: ['security','encryption','kms','hmac','sha256','sha-256','idempotency','audit','compliance','pci'],
+      evidence: 'Teya: AWS KMS encryption + HMAC-SHA256 idempotency for payment APIs. PCI-adjacent daily.' },
+  ];
+
+  // Every experience highlight across all roles, with company tag for citations.
+  function collectHighlights() {
+    const items = [];
+    PORTFOLIO_DATA.experience.forEach(exp => {
+      exp.highlights.forEach(h => items.push({ company: exp.company, text: h }));
+    });
+    return items;
+  }
+
+  // ── Tokenization ──
+  const STOPWORDS = new Set('a an and are as at be by for from has have if in into is it its of on or such that the their then there these they this to was were will with we you your our us i im about any all also but can could do does done each few has have it\'s our out over own same so some than that\'s their they\'re those through when where while who why how what which'.split(/\s+/));
+  function tokenize(text) {
+    return (text.toLowerCase().match(/[a-z][a-z0-9+\-./]{1,}/g) || [])
+      .filter(t => !STOPWORDS.has(t));
+  }
+
+  function findAliasHits(jdLower, aliases) {
+    let hits = 0;
+    aliases.forEach(a => {
+      // Word-boundary match so "ai" doesn't match "paid"
+      const pattern = new RegExp('\\b' + escapeRe(a) + '\\b', 'gi');
+      const m = jdLower.match(pattern);
+      if (m) hits += m.length;
+    });
+    return hits;
+  }
+  function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+  function analyzeJD(jd) {
+    const raw = (jd || '').trim();
+    if (!raw) return null;
+    const lower = raw.toLowerCase();
+    const tokens = tokenize(raw);
+    const tokenSet = new Set(tokens);
+
+    // Skill scoring
+    const skillResults = SKILL_GRAPH.map(s => {
+      const hits = findAliasHits(lower, s.aliases);
+      const score = hits * s.weight;
+      return { ...s, hits, score };
+    });
+    const matched = skillResults.filter(s => s.hits > 0).sort((a,b) => b.score - a.score);
+
+    // Overall match% — how well my top skills cover what the JD emphasizes
+    const totalSkillHits = skillResults.reduce((a,s) => a + s.hits, 0);
+    const totalSkillScore = matched.reduce((a,s) => a + s.score, 0);
+    // Normalize: compare matched score to a saturation point (tuned empirically)
+    const SATURATION = 18;
+    let pct = Math.round(Math.min(1, totalSkillScore / SATURATION) * 100);
+    if (matched.length >= 6) pct = Math.max(pct, 70);
+    if (matched.length >= 9) pct = Math.max(pct, 82);
+    if (matched.length >= 12) pct = Math.max(pct, 90);
+
+    // Rank experience highlights
+    const highlights = collectHighlights().map(h => {
+      const hlText = h.text.replace(/<[^>]+>/g, '').toLowerCase();
+      const hlTokens = tokenize(hlText);
+      let overlap = 0;
+      hlTokens.forEach(t => { if (tokenSet.has(t)) overlap++; });
+      // Bonus for matched skill aliases appearing in the bullet
+      matched.slice(0, 6).forEach(s => {
+        s.aliases.forEach(a => {
+          if (hlText.includes(a)) overlap += 0.6 * s.weight;
+        });
+      });
+      return { ...h, score: overlap };
+    }).sort((a,b) => b.score - a.score);
+    const topHighlights = highlights.filter(h => h.score > 0).slice(0, 4);
+
+    // Detect JD skills we don't match — for honesty / "gaps" panel
+    const gapHints = detectGaps(lower);
+
+    // Email opener: template-filled with top 2-3 skills + top highlight
+    const topSkillNames = matched.slice(0, 3).map(m => m.skill.toLowerCase().replace('/ ml','/ML'));
+    const topHl = topHighlights[0];
+    const opener = buildOpener(topSkillNames, topHl, pct);
+
+    return {
+      pct,
+      verdict: verdictFor(pct, matched.length),
+      matched: matched.slice(0, 7),
+      topHighlights,
+      gapHints,
+      opener,
+      totalHits: totalSkillHits,
+    };
+  }
+
+  function verdictFor(pct, n) {
+    if (pct >= 82 && n >= 6) return { cls: 'strong', label: '🎯 strong match' };
+    if (pct >= 60) return { cls: 'solid', label: '✓ solid match' };
+    if (pct >= 35) return { cls: 'partial', label: '~ partial match' };
+    return { cls: 'low', label: '↓ lean match' };
+  }
+
+  // Honest gap detection: keywords you'd want recruiters to see we flagged.
+  const GAP_CANDIDATES = [
+    { key: 'go', aliases: ['golang','\\bgo\\b'] },
+    { key: 'rust', aliases: ['\\brust\\b'] },
+    { key: 'react', aliases: ['\\breact\\b','react.js','reactjs'] },
+    { key: 'c++', aliases: ['c\\+\\+','cpp'] },
+    { key: 'swift/ios', aliases: ['swift','ios','swiftui'] },
+    { key: 'android', aliases: ['android','kotlin'] },
+    { key: 'terraform', aliases: ['terraform','hcl'] },
+    { key: 'gcp', aliases: ['\\bgcp\\b','google cloud'] },
+  ];
+  function detectGaps(lower) {
+    const gaps = [];
+    GAP_CANDIDATES.forEach(g => {
+      for (const a of g.aliases) {
+        if (new RegExp(a, 'i').test(lower)) { gaps.push(g.key); break; }
+      }
+    });
+    return gaps;
+  }
+
+  function buildOpener(topSkills, topHl, pct) {
+    const name = PORTFOLIO_DATA.name.split(' ')[0];
+    if (!topSkills.length) {
+      return `Hi — ${name} here. Your JD came through my portfolio's match engine; happy to walk through how my background lines up. Any time to chat this week?`;
+    }
+    const s = topSkills.slice(0, 3).join(', ').replace(/, ([^,]*)$/, ', and $1');
+    const hlText = topHl ? topHl.text.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : null;
+    const hlSnippet = hlText ? `For context, one recent ship from my stack: ${hlText} (${topHl.company}).` : '';
+    return `Hi — ${name} here. Your JD mentions ${s} — all in my daily stack. ${hlSnippet} Happy to jump on a 20-min call to dig in.`.trim();
+  }
+
+  // ── UI ──
+  function setThinking(step) {
+    thinking.classList.add('on');
+    thinkingText.textContent = step;
+  }
+  function clearThinking() { thinking.classList.remove('on'); }
+
+  async function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  async function run() {
+    const jd = input.value;
+    if (!jd.trim()) {
+      input.focus();
+      input.style.borderColor = 'var(--red)';
+      setTimeout(() => { input.style.borderColor = ''; }, 800);
+      return;
+    }
+    btn.disabled = true;
+    results.innerHTML = '';
+    setThinking('tokenizing job description…');
+    await wait(450);
+    setThinking('matching against skill graph…');
+    await wait(500);
+    setThinking('ranking relevant accomplishments…');
+    await wait(450);
+    setThinking('drafting opener…');
+    await wait(350);
+    const analysis = analyzeJD(jd);
+    clearThinking();
+    render(analysis);
+    btn.disabled = false;
+    // Scroll results into view
+    setTimeout(() => results.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+  }
+
+  function render(a) {
+    if (!a) return;
+    let i = 0;
+    const addReveal = (html) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'match-reveal';
+      wrap.style.animationDelay = (i++ * 0.12) + 's';
+      wrap.innerHTML = html;
+      results.appendChild(wrap);
+      return wrap;
+    };
+
+    // Score card
+    const scoreCard = addReveal(`
+      <div class="match-score">
+        <div>
+          <div class="match-score-pct" id="scorePct">0%</div>
+          <div class="match-score-label">on-device skill match</div>
+        </div>
+        <div>
+          <div class="match-score-bar"><div class="match-score-bar-fill" id="scoreBar"></div></div>
+          <div class="match-score-label" style="margin-top:8px">${a.matched.length} skills overlapped · ${a.totalHits} keyword hits across my stack</div>
+        </div>
+        <div class="match-score-verdict ${a.verdict.cls}">${a.verdict.label}</div>
+      </div>
+    `);
+    // Animate the score
+    requestAnimationFrame(() => {
+      const bar = document.getElementById('scoreBar');
+      const pctEl = document.getElementById('scorePct');
+      if (bar) bar.style.width = a.pct + '%';
+      if (pctEl) {
+        const target = a.pct;
+        const start = performance.now();
+        const dur = 1200;
+        const step = (t) => {
+          const p = Math.min(1, (t - start) / dur);
+          const eased = 1 - Math.pow(1 - p, 3);
+          pctEl.textContent = Math.round(target * eased) + '%';
+          if (p < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      }
+    });
+
+    // Skills panel
+    if (a.matched.length) {
+      const rows = a.matched.map(s => `
+        <div class="match-skill">
+          <span class="match-skill-check">✓</span>
+          <span class="match-skill-name">${s.skill}</span>
+          <span class="match-skill-hits">${s.hits}× in JD</span>
+          <span class="match-skill-evidence">${escapeHtml(s.evidence)}</span>
+        </div>
+      `).join('');
+      addReveal(`<div class="match-panel"><h4>━━ top skill hits</h4>${rows}</div>`);
+    }
+
+    // Top experience
+    if (a.topHighlights.length) {
+      const rows = a.topHighlights.map((h, idx) => `
+        <div class="match-bullet">
+          <span class="match-bullet-num">${idx+1}.</span>
+          ${h.text}
+          <span class="match-bullet-co">— ${h.company}</span>
+        </div>
+      `).join('');
+      addReveal(`<div class="match-panel"><h4>━━ most relevant shipped work</h4>${rows}</div>`);
+    }
+
+    // Gaps
+    if (a.gapHints.length) {
+      const tags = a.gapHints.map(g => `<span class="tag">${g}</span>`).join('');
+      addReveal(`<div class="match-panel"><h4>━━ honest gaps (what I'd learn on the job)</h4><div class="match-miss">${tags} — not in my daily stack yet, but I've picked up comparable tech before (e.g. Java → Spring Boot in weeks at Teya). Happy to discuss.</div></div>`);
+    }
+
+    // Email opener
+    addReveal(`
+      <div class="match-panel">
+        <h4>━━ opener you can send me</h4>
+        <div class="match-email" id="matchEmailText">${escapeHtml(a.opener)}<button class="match-email-copy" id="matchEmailCopy">📋 copy</button></div>
+        <div class="match-cta">
+          <a class="match-btn primary" id="matchEmailCta" href="#">📧 email Tahseen with this</a>
+        </div>
+      </div>
+    `);
+
+    // Wire copy + CTA
+    setTimeout(() => {
+      const copyBtn = document.getElementById('matchEmailCopy');
+      const cta = document.getElementById('matchEmailCta');
+      if (copyBtn) copyBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        try {
+          await navigator.clipboard.writeText(a.opener);
+          copyBtn.textContent = '✓ copied';
+          copyBtn.classList.add('copied');
+          setTimeout(() => { copyBtn.textContent = '📋 copy'; copyBtn.classList.remove('copied'); }, 2000);
+        } catch(_) {}
+      });
+      if (cta) cta.addEventListener('click', (e) => {
+        e.preventDefault();
+        const subject = encodeURIComponent(`Role match — ${a.matched.slice(0,2).map(m => m.skill).join(' + ')}`);
+        const body = encodeURIComponent(a.opener + '\n\n— sent via tahseen-rahman\'s portfolio match engine');
+        window.location.href = `mailto:${PORTFOLIO_DATA.email}?subject=${subject}&body=${body}`;
+      });
+    }, 50);
+  }
+
+  // Expose to Python / console
+  window.matchJD = (jd) => analyzeJD(jd);
+
+  // Sample JD for demos
+  const SAMPLE_JD = `Senior Backend Engineer — Payments Platform
+
+We're hiring a senior backend engineer to help scale our payments infrastructure. You'll work on the core acquiring rails: authorization, settlement, reversals, and chargeback flows across Visa and Mastercard schemes.
+
+What you'll do:
+- Design and build payment services in Python (Django/Flask) and Java (Spring Boot)
+- Own the ISO 8583 message framing and BASE24 integration
+- Scale Kafka-based event pipelines handling millions of transactions/day
+- Work with PostgreSQL at scale; use AWS (KMS, SQS, RDS) daily
+- Implement HMAC-signed idempotent APIs and PCI-compliant flows
+- Partner with our AI/ML team on fraud and risk scoring models
+
+What we're looking for:
+- 5+ years of backend engineering experience
+- Hands-on with Kafka, RabbitMQ, Elasticsearch
+- Strong system design — you've scaled distributed systems before
+- Bonus: experience with DCC, FX, or cross-border payments
+- Bonus: observability stack experience (Grafana / Prometheus)
+
+Remote-friendly. Lisbon / London / Berlin preferred.`;
+
+  // Wire buttons
+  btn.addEventListener('click', run);
+  sampleBtn.addEventListener('click', () => { input.value = SAMPLE_JD; input.focus(); });
+  clearBtn.addEventListener('click', () => { input.value = ''; results.innerHTML = ''; input.focus(); });
+  input.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); run(); }
+  });
+
+  // Gradient spotlight follows cursor over the match box (matches other cards)
+  const box = document.querySelector('.match-box');
+  if (box) box.addEventListener('mousemove', (e) => {
+    const r = box.getBoundingClientRect();
+    box.style.setProperty('--bx', ((e.clientX - r.left) / r.width * 100) + '%');
+    box.style.setProperty('--by', ((e.clientY - r.top) / r.height * 100) + '%');
+  });
+})();
 
 // ═══════════════════════════════════════════════════════════
 // PAYMENT SIMULATOR — ISO 8583 / BASE24-flavored transaction flow
