@@ -1856,6 +1856,120 @@
     to { transform: translateY(-120%) rotate(-1deg); opacity: 0; }
   }
 
+  /* ───── Single-slide step stage ───── */
+  .pay-step-stage {
+    position: relative;
+    min-height: 320px;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+  }
+  .pay-step {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 8px;
+    text-align: center;
+    animation: stepIn 0.45s cubic-bezier(.2,.9,.3,1.15);
+  }
+  @keyframes stepIn {
+    from { opacity: 0; transform: translateY(14px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .pay-step-icon {
+    font-size: 3.6rem;
+    line-height: 1;
+    margin-bottom: 4px;
+    filter: drop-shadow(0 0 20px rgba(57,210,192,0.25));
+    animation: stepIcon 0.6s cubic-bezier(.2,.9,.3,1.3);
+  }
+  @keyframes stepIcon {
+    from { transform: scale(0.4) rotate(-10deg); }
+    to   { transform: scale(1) rotate(0); }
+  }
+  .pay-step.ok   .pay-step-icon { filter: drop-shadow(0 0 22px rgba(63,185,80,0.45)); }
+  .pay-step.fail .pay-step-icon { filter: drop-shadow(0 0 22px rgba(248,81,73,0.45)); }
+
+  .pay-step-amount {
+    font-size: 2.3rem;
+    font-weight: 700;
+    color: #e8fff9;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 18px rgba(57,210,192,0.35);
+    line-height: 1.1;
+  }
+  .pay-step.ok   .pay-step-amount { color: #b7ffc6; text-shadow: 0 0 20px rgba(63,185,80,0.5); }
+  .pay-step.fail .pay-step-amount { color: #ffb5b1; text-shadow: 0 0 20px rgba(248,81,73,0.5); }
+
+  .pay-step-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    color: #39d2c0;
+    margin-top: 4px;
+  }
+  .pay-step.ok   .pay-step-title { color: #3fb950; }
+  .pay-step.fail .pay-step-title { color: #f85149; }
+
+  .pay-step-sub {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.04em;
+    line-height: 1.4;
+    max-width: 280px;
+  }
+
+  .pay-step-iso {
+    margin-top: 14px;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    color: rgba(57,210,192,0.75);
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(57,210,192,0.2);
+    padding: 6px 12px;
+    border-radius: 6px;
+    word-break: break-all;
+    max-width: 300px;
+  }
+  .pay-step.ok .pay-step-iso   { color: rgba(63,185,80,0.85);  border-color: rgba(63,185,80,0.35); }
+  .pay-step.fail .pay-step-iso { color: rgba(248,81,73,0.85);  border-color: rgba(248,81,73,0.35); }
+  .pay-step.busy .pay-step-iso { color: rgba(210,153,34,0.9);  border-color: rgba(210,153,34,0.3); }
+
+  /* Subtle pulsing "working" indicator under the title when busy */
+  .pay-step-dots {
+    display: inline-flex;
+    gap: 5px;
+  }
+  .pay-step-dots span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor;
+    opacity: 0.4;
+    animation: stepDot 1.2s ease-in-out infinite;
+  }
+  .pay-step-dots span:nth-child(2) { animation-delay: 0.15s; }
+  .pay-step-dots span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes stepDot {
+    0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+    40%           { opacity: 1;   transform: scale(1.1); }
+  }
+
+  /* Spinner icon ring for "working" steps */
+  .pay-step-spinner {
+    width: 58px; height: 58px;
+    border-radius: 50%;
+    border: 4px solid rgba(57,210,192,0.15);
+    border-top-color: var(--cyan);
+    animation: spin 0.9s linear infinite;
+    margin-bottom: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ───── (retained) Mini pipeline — now unused but CSS kept for safety ───── */
   /* Mini pipeline inside the terminal screen */
   .pay-mini-pipe {
     display: flex;
@@ -2689,49 +2803,9 @@
             </div>
 
             <div class="pay-screen-live" id="payLive" hidden>
-              <div class="pay-screen-amount" id="payAmount">€ 0.00</div>
-              <!-- Mini network flow — lives INSIDE the terminal -->
-              <div class="sim-pipeline pay-mini-pipe" id="simPipeline">
-                <div class="sim-node" data-node="0" id="posNode">
-                  <div class="sim-node-icon">💳</div>
-                  <div class="sim-node-label">POS</div>
-                </div>
-                <div class="sim-edge" data-edge="0"><div class="sim-packet"></div></div>
-                <div class="sim-node" data-node="1">
-                  <div class="sim-node-icon">🏦</div>
-                  <div class="sim-node-label">Acq</div>
-                </div>
-                <div class="sim-edge" data-edge="1"><div class="sim-packet"></div></div>
-                <div class="sim-node" data-node="2">
-                  <div class="sim-node-icon">🌐</div>
-                  <div class="sim-node-label">Scheme</div>
-                </div>
-                <div class="sim-edge" data-edge="2"><div class="sim-packet"></div></div>
-                <div class="sim-node" data-node="3">
-                  <div class="sim-node-icon">🏛️</div>
-                  <div class="sim-node-label">Issuer</div>
-                </div>
-                <div class="sim-edge" data-edge="3"><div class="sim-packet"></div></div>
-                <div class="sim-node" data-node="4">
-                  <div class="sim-node-icon">✅</div>
-                  <div class="sim-node-label">auth</div>
-                </div>
-              </div>
-              <div class="pay-screen-status" id="payStatus">READY</div>
-              <div class="pay-screen-sub" id="paySub">pick a scenario</div>
-              <!-- Scrolling raw log — the detail stream for the curious -->
-              <div class="sim-log pay-mini-log" id="simLog">
-                <div class="sim-log-empty">pick a scenario — raw ISO 8583 stream will scroll here</div>
-              </div>
+              <!-- One step at a time — step replaces content with an enter animation -->
+              <div class="pay-step-stage" id="payStage"></div>
             </div>
-          </div>
-
-          <div class="pay-screen-divider"></div>
-
-          <!-- Footer: always reserved — idle hint or live raw code -->
-          <div class="pay-screen-foot">
-            <span class="pay-screen-foot-label" id="payFootLabel">HINT</span>
-            <span class="pay-screen-foot-value" id="payCode">pick a scenario above to see raw ISO 8583 bytes here</span>
           </div>
         </div>
       </div>
@@ -4615,44 +4689,33 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
 // PAYMENT SIMULATOR — ISO 8583 / BASE24-flavored transaction flow
 // ═══════════════════════════════════════════════════════════
 (function() {
-  const log = document.getElementById('simLog');
-  const nodes = Array.from(document.querySelectorAll('.sim-node'));
-  const edges = Array.from(document.querySelectorAll('.sim-edge'));
   const buttons = Array.from(document.querySelectorAll('[data-scenario]'));
-  if (!log || !nodes.length) return;
+  if (!buttons.length) return;
 
   let running = false;
 
   function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-  function clearPipeline() {
-    nodes.forEach(n => n.classList.remove('active', 'ok', 'fail', 'idle-beckon'));
-    edges.forEach(e => e.classList.remove('active', 'flowing', 'reverse', 'fail'));
+  // Play a declarative sequence of terminal steps.
+  // Each step spec: { icon | spinner, amount, title, sub, iso, state, dwell }
+  async function playSteps(steps) {
+    for (const step of steps) {
+      setStep(step);
+      await sleep(step.dwell != null ? step.dwell : 700);
+    }
   }
 
   // ── Terminal screen state ────────────────────────────────
   const pay = {
-    device:    document.getElementById('payDevice'),
-    screen:    document.getElementById('payScreen'),
-    chip:      document.getElementById('payChip'),
-    amount:    document.getElementById('payAmount'),
-    idle:      document.getElementById('payIdle'),
-    live:      document.getElementById('payLive'),
-    status:    document.getElementById('payStatus'),
-    sub:       document.getElementById('paySub'),
-    footLabel: document.getElementById('payFootLabel'),
-    code:      document.getElementById('payCode'),
+    device: document.getElementById('payDevice'),
+    screen: document.getElementById('payScreen'),
+    chip:   document.getElementById('payChip'),
+    idle:   document.getElementById('payIdle'),
+    live:   document.getElementById('payLive'),
+    stage:  document.getElementById('payStage'),
   };
-  function setScreen({ status, sub, code, foot }) {
-    if (status !== undefined && pay.status) pay.status.textContent = status;
-    if (sub !== undefined && pay.sub) pay.sub.textContent = sub;
-    if (code !== undefined && pay.code) {
-      pay.code.textContent = code;
-      if (pay.footLabel) pay.footLabel.textContent = foot || (code ? 'MTI' : 'HINT');
-    }
-  }
-  function setAmount(amt) { if (pay.amount) pay.amount.textContent = amt; }
   const CHIP_LABELS = { ready: 'READY', busy: 'BUSY', ok: 'APPROVED', fail: 'DECLINED' };
+
   function setPayState(state) {
     if (!pay.screen) return;
     pay.screen.classList.remove('busy', 'ok', 'fail');
@@ -4670,10 +4733,30 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
     if (pay.idle) pay.idle.hidden = true;
     if (pay.live) pay.live.hidden = false;
   }
+
+  /**
+   * Render a single step on the terminal, replacing whatever was there.
+   * spec: { icon, spinner, amount, title, sub, iso, state }
+   */
+  function setStep(spec) {
+    if (!pay.stage) return;
+    const state = spec.state || 'busy';
+    setPayState(state);
+
+    const parts = [];
+    if (spec.spinner) parts.push('<div class="pay-step-spinner"></div>');
+    else if (spec.icon) parts.push(`<div class="pay-step-icon">${spec.icon}</div>`);
+    if (spec.amount) parts.push(`<div class="pay-step-amount">${spec.amount}</div>`);
+    if (spec.title)  parts.push(`<div class="pay-step-title">${spec.title}</div>`);
+    if (spec.sub)    parts.push(`<div class="pay-step-sub">${spec.sub}</div>`);
+    if (spec.iso)    parts.push(`<div class="pay-step-iso">${spec.iso}</div>`);
+
+    pay.stage.innerHTML = `<div class="pay-step ${state}">${parts.join('')}</div>`;
+  }
+
   function resetScreen() {
-    setAmount('€ 0.00');
-    setScreen({ status: 'READY', sub: 'pick a scenario', code: '', foot: '' });
     setPayState('ready');
+    if (pay.stage) pay.stage.innerHTML = '';
     showIdle();
   }
 
@@ -4736,53 +4819,9 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
     return d.toTimeString().slice(0,5) + ' · ' + d.toISOString().slice(0,10);
   }
 
-  function restIdle() {
-    // Return the POS node to its idle beckon state for the next visitor action.
-    const pos = document.getElementById('posNode');
-    if (!pos) return;
-    nodes.forEach(n => n.classList.remove('active', 'ok', 'fail'));
-    pos.classList.add('idle-beckon');
-  }
-
-  function logEntry(html, cls = '') {
-    if (log.querySelector('.sim-log-empty')) log.innerHTML = '';
-    const row = document.createElement('div');
-    row.className = 'sim-log-entry ' + cls;
-    row.innerHTML = html;
-    log.appendChild(row);
-    log.scrollTop = log.scrollHeight;
-    return row;
-  }
-
-  function head(text) { logEntry(`<span class="sim-log-head">━━ ${text} ━━</span>`); }
-  function kv(k, v, cls='') { logEntry(`<span class="k">${k}</span> <span class="v">${v}</span>`, cls); }
-  function comment(text) { logEntry(`<span class="c">// ${text}</span>`); }
-
-  async function flyPacket(edgeIdx, { reverse = false, fail = false } = {}) {
-    const e = edges[edgeIdx];
-    e.classList.add('active');
-    if (reverse) e.classList.add('reverse');
-    if (fail) e.classList.add('fail');
-    // Restart the animation by toggling the class
-    e.classList.remove('flowing');
-    void e.offsetWidth;
-    e.classList.add('flowing');
-    await sleep(900);
-    e.classList.remove('flowing', 'active', 'reverse', 'fail');
-  }
-
-  async function activate(nodeIdx, state = 'active') {
-    nodes[nodeIdx].classList.add(state);
-    await sleep(220);
-  }
-
   // Generate a pseudo-random STAN (6 digits) and TRN ID
   function stan() { return String(Math.floor(Math.random() * 900000) + 100000); }
   function trnId() { return 'TRN-' + Date.now().toString(36).toUpperCase(); }
-  function now() {
-    const d = new Date();
-    return d.toTimeString().slice(0,8) + '.' + String(d.getMilliseconds()).padStart(3,'0');
-  }
 
   // Compute HMAC-SHA256(key, body) hex, demonstrating the "API idempotency via HMAC-SHA256" bullet.
   async function hmac256(keyStr, bodyStr) {
@@ -4793,70 +4832,24 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
     return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2,'0')).join('');
   }
 
-  // ── Scenarios ──
+  // ── Scenarios — declarative step sequences ──
   async function runApprove() {
     const s = stan(), id = trnId();
-    setAmount('€ 4.20');
-    setScreen({ status: 'WAITING FOR CARD', sub: 'tap or swipe', code: '' });
-    setPayState('busy');
+    const sig = await hmac256('teya-idempotency-key-2026',
+      `MTI=0200|PAN=4***1234|AMT=420|STAN=${s}|TRN=${id}`);
 
-    head('TRANSACTION: card purchase · €4.20');
-    kv('[' + now() + ']', 'Card tapped at POS terminal');
-    await activate(0);
-    setScreen({ status: 'READING CARD…', sub: 'PAN 4*** 1234', code: 'ICC applet AID A0000000031010' });
-    await sleep(260);
+    const steps = [
+      { icon: '💳', title: 'WAITING FOR CARD', sub: 'tap, insert or swipe', iso: '', state: 'busy', dwell: 700 },
+      { icon: '💳', amount: '€ 4.20', title: 'CARD DETECTED', sub: 'Visa · PAN 4*** 1234', iso: 'ICC applet AID A0000000031010', state: 'busy', dwell: 700 },
+      { spinner: true, amount: '€ 4.20', title: 'AUTHORIZING', sub: 'framing ISO 8583 request', iso: `MTI 0200 · DE4 000000000420 · STAN ${s}`, state: 'busy', dwell: 900 },
+      { spinner: true, amount: '€ 4.20', title: 'ROUTING', sub: 'acquirer → scheme', iso: `HMAC ${sig.slice(0,20)}…`, state: 'busy', dwell: 700 },
+      { spinner: true, amount: '€ 4.20', title: 'ROUTING', sub: 'scheme → issuer', iso: 'BIN 4*** · routing currency 978', state: 'busy', dwell: 700 },
+      { spinner: true, amount: '€ 4.20', title: 'AWAITING ISSUER', sub: 'risk check · funds check', iso: 'timeout 8s · 3DS skipped (low-ticket)', state: 'busy', dwell: 900 },
+      { icon: '✓', amount: '€ 4.20', title: 'APPROVED', sub: 'auth code A9FZ21', iso: 'MTI 0210 · RC 00', state: 'ok', dwell: 900 },
+      { icon: '🖨️', title: 'PRINTING RECEIPT', sub: 'thermal head active', iso: '', state: 'ok', dwell: 100 },
+    ];
+    await playSteps(steps);
 
-    comment('Framing ISO 8583 request (BIC-wrapped, BASE24-style)');
-    kv('MTI:', '<span class="v">0200</span> <span class="c">(authorization request)</span>');
-    kv('DE2  PAN:', '4*** **** **** 1234 <span class="c">(Luhn-valid)</span>');
-    kv('DE3  Proc code:', '00 0000 <span class="c">(purchase / goods)</span>');
-    kv('DE4  Amount:', '000000000420 <span class="c">(€4.20, minor units)</span>');
-    kv('DE11 STAN:', s);
-    kv('DE41 Term ID:', 'TERM-PT-LIS-042');
-    kv('DE49 Currency:', '978 <span class="c">(EUR)</span>');
-
-    const body = `MTI=0200|PAN=4***1234|AMT=420|STAN=${s}|TRN=${id}`;
-    const sig = await hmac256('teya-idempotency-key-2026', body);
-    kv('X-Idempotency-Key:', `<span class="c">${sig.slice(0,32)}…</span>`);
-
-    setScreen({ status: 'AUTHORIZING…', sub: 'acquirer', code: 'MTI 0200 · DE4 000000000420 · STAN ' + s });
-    await flyPacket(0);
-    await activate(1);
-    comment('Acquirer (Teya): PAN decrypted via AWS KMS, routed to scheme');
-    setScreen({ status: 'AUTHORIZING…', sub: 'routing to scheme', code: 'HMAC ' + sig.slice(0,16) + '…' });
-    await flyPacket(1);
-    await activate(2);
-    comment('Scheme: BIN lookup → Issuer routing');
-    setScreen({ status: 'AUTHORIZING…', sub: 'scheme → issuer', code: 'BIN 4*** · routing 978' });
-    await flyPacket(2);
-    await activate(3);
-    comment('Issuer: risk check, funds check, 3DS skipped (low-ticket)');
-    setScreen({ status: 'AWAITING ISSUER…', sub: 'risk + funds check', code: 'timeout 8s' });
-    await sleep(420);
-
-    // Response flight back
-    await flyPacket(3, { reverse: true });
-    nodes[3].classList.remove('active'); nodes[3].classList.add('ok');
-    head('RESPONSE');
-    kv('MTI:', '<span class="v">0210</span> <span class="c">(authorization response)</span>', 'ok');
-    kv('DE39 Resp code:', '00 <span class="c">(approved)</span>', 'ok');
-    kv('DE38 Auth code:', 'A9FZ21', 'ok');
-
-    await flyPacket(2, { reverse: true });
-    nodes[2].classList.remove('active'); nodes[2].classList.add('ok');
-    await flyPacket(1, { reverse: true });
-    nodes[1].classList.remove('active'); nodes[1].classList.add('ok');
-    await flyPacket(0, { reverse: true });
-    nodes[0].classList.remove('active'); nodes[0].classList.add('ok');
-    await activate(4, 'ok');
-    nodes[4].classList.add('ok');
-    kv('✓ Approved', 'total round-trip: ~380ms', 'ok');
-
-    setScreen({ status: 'APPROVED', sub: 'auth code A9FZ21', code: 'MTI 0210 · RC 00 · APPROVED' });
-    setPayState('ok');
-
-    await sleep(450);
-    setScreen({ status: 'PRINTING RECEIPT…', sub: 'thermal head active', code: '' });
     renderReceipt({
       time: nowStamp(),
       location: 'PORTO · PT',
@@ -4874,55 +4867,18 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
   }
 
   async function runDcc() {
-    setAmount('€ 4.20');
-    setScreen({ status: 'WAITING FOR CARD', sub: 'tap or swipe', code: '' });
-    setPayState('busy');
+    const steps = [
+      { icon: '💳', title: 'WAITING FOR CARD', sub: 'tap, insert or swipe', iso: '', state: 'busy', dwell: 700 },
+      { icon: '🌍', amount: '€ 4.20', title: 'FOREIGN CARD', sub: 'USD card · EUR terminal', iso: 'card CCY 840 · term CCY 978', state: 'busy', dwell: 800 },
+      { spinner: true, amount: '€ 4.20', title: 'FETCHING FX RATE', sub: 'Teya DCC engine', iso: 'base 1.0842 · margin +2.5%', state: 'busy', dwell: 900 },
+      { icon: '💱', title: 'CHOOSE CURRENCY', sub: 'cardholder picks:<br>$4.67 USD &nbsp; or &nbsp; €4.20 EUR', iso: 'DE54 quote · rate 1.1113', state: 'busy', dwell: 1200 },
+      { icon: '🇺🇸', amount: '$ 4.67', title: 'PAY IN USD', sub: 'DCC accepted', iso: 'DE54 · USD 467 @ 1.1113', state: 'busy', dwell: 700 },
+      { spinner: true, amount: '$ 4.67', title: 'AUTHORIZING', sub: 'acquirer → scheme → issuer', iso: 'MTI 0200 · rate 1.1113', state: 'busy', dwell: 900 },
+      { icon: '✓', amount: '$ 4.67', title: 'APPROVED', sub: '€0.11 commission captured', iso: 'MTI 0210 · RC 00', state: 'ok', dwell: 900 },
+      { icon: '🖨️', title: 'PRINTING RECEIPT', sub: 'thermal head active', iso: '', state: 'ok', dwell: 100 },
+    ];
+    await playSteps(steps);
 
-    head('TRANSACTION: foreign card · €4.20 at EUR terminal');
-    kv('[' + now() + ']', 'Card tapped — Visa USD-issued at EUR terminal');
-    await activate(0);
-    setScreen({ status: 'READING CARD…', sub: 'USD card detected', code: 'currency 840 · terminal 978' });
-    kv('MTI:', '<span class="v">0200</span>');
-    kv('DE49 Term currency:', '978 <span class="c">(EUR)</span>');
-    kv('Card currency:', '840 <span class="c">(USD)</span>');
-    comment('Currency mismatch — DCC offer path activated');
-
-    await flyPacket(0); await activate(1);
-    setScreen({ status: 'FETCHING FX RATE…', sub: 'Teya DCC engine', code: 'base 1.0842 + 2.5%' });
-    comment('Teya DCC engine: fetching live Visa settlement rate');
-    await sleep(500);
-    kv('Base rate:', '1.0842 USD/EUR');
-    kv('Teya margin:', '+2.5% <span class="c">(FX commission)</span>');
-    kv('Quoted rate:', '1.1113 USD/EUR');
-    kv('Cardholder sees:', '<span class="v">$4.67 USD</span> or €4.20 EUR');
-
-    setScreen({ status: 'CHOOSE CURRENCY', sub: '$4.67 USD  or  €4.20 EUR', code: 'awaiting cardholder…' });
-    await sleep(700);
-    comment('Cardholder selects: "Pay in USD" — DCC accepted');
-    kv('DE54 Additional amts:', 'USD 467 @ 1.1113', 'ok');
-    setScreen({ status: 'AUTHORIZING USD…', sub: 'scheme → issuer', code: 'MTI 0200 · USD 4.67 · rate 1.1113' });
-
-    await flyPacket(1); await activate(2);
-    await flyPacket(2); await activate(3);
-    await sleep(300);
-    await flyPacket(3, { reverse: true });
-    nodes[3].classList.add('ok'); nodes[3].classList.remove('active');
-    head('RESPONSE');
-    kv('MTI:', '<span class="v">0210</span>', 'ok');
-    kv('DE39 Resp code:', '00 approved', 'ok');
-    await flyPacket(2, { reverse: true });
-    nodes[2].classList.add('ok'); nodes[2].classList.remove('active');
-    await flyPacket(1, { reverse: true });
-    nodes[1].classList.add('ok'); nodes[1].classList.remove('active');
-    await flyPacket(0, { reverse: true });
-    nodes[0].classList.add('ok'); nodes[0].classList.remove('active');
-    await activate(4, 'ok');
-    kv('✓ DCC commission captured:', '€0.11 <span class="c">(feeds the ~25% revenue figure above)</span>', 'ok');
-
-    setScreen({ status: 'APPROVED', sub: 'paid in USD · margin captured', code: 'MTI 0210 · RC 00 · €0.11 fee' });
-    setPayState('ok');
-    await sleep(450);
-    setScreen({ status: 'PRINTING RECEIPT…', sub: 'thermal head active', code: '' });
     renderReceipt({
       time: nowStamp(),
       location: 'PORTO · PT',
@@ -4942,98 +4898,23 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
 
   async function runDecline() {
     const s = stan();
-    setAmount('€ 999.00');
-    setScreen({ status: 'WAITING FOR CARD', sub: 'tap or swipe', code: '' });
-    setPayState('busy');
+    const steps = [
+      { icon: '💳', title: 'WAITING FOR CARD', sub: 'tap, insert or swipe', iso: '', state: 'busy', dwell: 600 },
+      { icon: '💳', amount: '€ 999.00', title: 'HIGH-TICKET', sub: 'velocity check arming', iso: `MTI 0200 · DE4 000000099900 · STAN ${s}`, state: 'busy', dwell: 700 },
+      { spinner: true, amount: '€ 999.00', title: 'AUTHORIZING', sub: 'acquirer → scheme → issuer', iso: 'MTI 0200 · routing', state: 'busy', dwell: 800 },
+      { spinner: true, amount: '€ 999.00', title: 'AWAITING ISSUER', sub: 'risk check · funds check', iso: 'velocity eval', state: 'busy', dwell: 900 },
+      { icon: '✕', amount: '€ 999.00', title: 'DECLINED', sub: 'do not honor · issuer fraud signal', iso: 'MTI 0210 · RC 05', state: 'fail', dwell: 1400 },
 
-    head('TRANSACTION: card purchase · €999.00');
-    kv('[' + now() + ']', 'High-ticket amount');
-    await activate(0);
-    setScreen({ status: 'READING CARD…', sub: 'high-ticket', code: 'velocity check arming' });
-    kv('MTI:', '<span class="v">0200</span> <span class="c">(authorization request)</span>');
-    kv('DE4  Amount:', '000000099900 <span class="c">(€999.00)</span>');
-    kv('DE11 STAN:', s);
-    setScreen({ status: 'AUTHORIZING…', sub: 'acquirer', code: 'MTI 0200 · DE4 000000099900' });
-    await flyPacket(0); await activate(1);
-    await flyPacket(1); await activate(2);
-    await flyPacket(2); await activate(3);
-    setScreen({ status: 'AWAITING ISSUER…', sub: 'risk + funds check', code: 'velocity eval' });
-    await sleep(350);
-    comment('Issuer: velocity check failed (fraud signal)');
-
-    // Failure propagates back through the pipeline in red
-    nodes[3].classList.remove('active'); nodes[3].classList.add('fail');
-    await flyPacket(3, { reverse: true, fail: true });
-    nodes[2].classList.remove('active'); nodes[2].classList.add('fail');
-    await flyPacket(2, { reverse: true, fail: true });
-    nodes[1].classList.remove('active'); nodes[1].classList.add('fail');
-    await flyPacket(1, { reverse: true, fail: true });
-    nodes[0].classList.remove('active'); nodes[0].classList.add('fail');
-    await flyPacket(0, { reverse: true, fail: true });
-
-    head('RESPONSE');
-    kv('MTI:', '<span class="v">0210</span>', 'err');
-    kv('DE39 Resp code:', '<span class="v">05</span> <span class="c">(do not honor)</span>', 'err');
-    nodes[4].classList.add('fail');
-
-    setScreen({ status: 'DECLINED', sub: 'do not honor · code 05', code: 'MTI 0210 · RC 05' });
-    setPayState('fail');
-
-    await sleep(700);
-
-    // ── Animated reversal ─────────────────────────────────────
-    head('REVERSAL (automatic)');
-    setScreen({ status: 'AUTO-REVERSAL…', sub: 'releasing auth hold', code: 'MTI 0420 · retry policy exp' });
-    setPayState('busy');
-    comment('Teya auto-reversal: acquirer initiates 0420 to release the auth hold.');
-    // Clear the fail halos on the rails — pipeline is about to light up with the reversal
-    nodes[0].classList.remove('fail');
-    nodes[1].classList.remove('fail');
-    nodes[2].classList.remove('fail');
-    nodes[3].classList.remove('fail');
-    nodes[4].classList.remove('fail');
-
-    const delays = [800, 1400, 2400]; // scaled for a demo; real prod is 1s/2s/4s
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      const isFinal = attempt === 3;
-      kv(`attempt ${attempt}:`, `MTI=0420 · backoff +${delays[attempt-1]}ms <span class="c">(exponential)</span>`);
-      setScreen({ status: `REVERSAL ATTEMPT ${attempt}/3`, sub: `backoff +${delays[attempt-1]}ms`, code: 'MTI 0420' });
-      await sleep(220);
-
-      // Acquirer → Scheme
-      await activate(1);
-      await flyPacket(1);
-      await activate(2);
-      await flyPacket(2);
-
-      if (!isFinal) {
-        // Timeout before reaching issuer
-        nodes[2].classList.add('fail');
-        await sleep(260);
-        kv('  result:', `<span class="v">timeout</span> <span class="c">(no response from scheme)</span>`, 'err');
-        setScreen({ status: `REVERSAL ATTEMPT ${attempt}/3`, sub: 'scheme timeout — retrying', code: 'no response · back off' });
-        // Reset for next attempt
-        nodes[1].classList.remove('active');
-        nodes[2].classList.remove('active', 'fail');
-        await sleep(200);
-      } else {
-        // Final attempt reaches the issuer and is accepted
-        await activate(3);
-        await sleep(300);
-        nodes[3].classList.add('ok'); nodes[3].classList.remove('active');
-        kv('  issuer:', 'MTI 0430 · <span class="v">00</span> reversal accepted', 'ok');
-        // Response flies back: issuer → scheme → acquirer
-        await flyPacket(2, { reverse: true });
-        nodes[2].classList.add('ok'); nodes[2].classList.remove('active');
-        await flyPacket(1, { reverse: true });
-        nodes[1].classList.add('ok'); nodes[1].classList.remove('active');
-        nodes[4].classList.add('ok');
-      }
-    }
-
-    kv('✓ Auth hold released', 'cardholder statement: clean', 'ok');
-    setScreen({ status: 'REVERSAL OK', sub: 'auth hold released', code: 'MTI 0430 · RC 00 · clean' });
-    setPayState('ok');
+      // Reversal sequence
+      { icon: '↺', title: 'AUTO-REVERSAL', sub: 'releasing the auth hold', iso: 'MTI 0420 · retry policy: exponential', state: 'busy', dwell: 700 },
+      { spinner: true, title: 'REVERSAL · ATTEMPT 1/3', sub: 'acquirer → scheme', iso: 'backoff +0.8s', state: 'busy', dwell: 700 },
+      { icon: '⌛', title: 'TIMEOUT', sub: 'no response from scheme — retrying', iso: 'attempt 1 · failed', state: 'fail', dwell: 700 },
+      { spinner: true, title: 'REVERSAL · ATTEMPT 2/3', sub: 'acquirer → scheme', iso: 'backoff +1.4s', state: 'busy', dwell: 700 },
+      { icon: '⌛', title: 'TIMEOUT', sub: 'no response from scheme — retrying', iso: 'attempt 2 · failed', state: 'fail', dwell: 700 },
+      { spinner: true, title: 'REVERSAL · ATTEMPT 3/3', sub: 'scheme → issuer', iso: 'backoff +2.4s', state: 'busy', dwell: 900 },
+      { icon: '✓', title: 'AUTH HOLD RELEASED', sub: 'reversal accepted · statement clean', iso: 'MTI 0430 · RC 00', state: 'ok', dwell: 900 },
+    ];
+    await playSteps(steps);
     // No receipt on decline — the paper stays in the roll.
   }
 
@@ -5041,9 +4922,7 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
     if (running) return;
     running = true;
     buttons.forEach(b => b.disabled = true);
-    clearPipeline();
     clearReceipt();
-    log.innerHTML = '';
     showLive();
     try {
       if (scenario === 'approve') {
@@ -5057,7 +4936,7 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
         celebrate('fail');
       }
     } catch (err) {
-      logEntry('<span class="c">// simulator error: ' + String(err.message || err) + '</span>');
+      console.error('simulator error', err);
     }
     buttons.forEach(b => b.disabled = false);
     running = false;
@@ -5066,7 +4945,7 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
   }
 
   function celebrate(kind) {
-    const rect = (pay.device || document.querySelector('.sim-pipeline')).getBoundingClientRect();
+    const rect = (pay.device || document.body).getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
     if (kind === 'win' && window.spawnBurst) {
