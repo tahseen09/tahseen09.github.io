@@ -4870,11 +4870,11 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
     const steps = [
       { icon: '💳', title: 'WAITING FOR CARD', sub: 'tap, insert or swipe', iso: '', state: 'busy', dwell: 700 },
       { icon: '🌍', amount: '€ 4.20', title: 'FOREIGN CARD', sub: 'USD card · EUR terminal', iso: 'card CCY 840 · term CCY 978', state: 'busy', dwell: 800 },
-      { spinner: true, amount: '€ 4.20', title: 'FETCHING FX RATE', sub: 'Teya DCC engine', iso: 'base 1.0842 · margin +2.5%', state: 'busy', dwell: 900 },
+      { spinner: true, amount: '€ 4.20', title: 'FETCHING FX RATE', sub: 'Teya DCC engine · live Visa rate', iso: 'base 1.0842 · margin +2.5%', state: 'busy', dwell: 900 },
       { icon: '💱', title: 'CHOOSE CURRENCY', sub: 'cardholder picks:<br>$4.67 USD &nbsp; or &nbsp; €4.20 EUR', iso: 'DE54 quote · rate 1.1113', state: 'busy', dwell: 1200 },
-      { icon: '🇺🇸', amount: '$ 4.67', title: 'PAY IN USD', sub: 'DCC accepted', iso: 'DE54 · USD 467 @ 1.1113', state: 'busy', dwell: 700 },
-      { spinner: true, amount: '$ 4.67', title: 'AUTHORIZING', sub: 'acquirer → scheme → issuer', iso: 'MTI 0200 · rate 1.1113', state: 'busy', dwell: 900 },
-      { icon: '✓', amount: '$ 4.67', title: 'APPROVED', sub: '€0.11 commission captured', iso: 'MTI 0210 · RC 00', state: 'ok', dwell: 900 },
+      { icon: '🇺🇸', amount: '€ 4.20', title: 'USD SELECTED', sub: 'cardholder billed $4.67 · merchant settles €4.20', iso: 'DE54 · USD 467 @ 1.1113', state: 'busy', dwell: 1000 },
+      { spinner: true, amount: '€ 4.20', title: 'AUTHORIZING', sub: 'acquirer → scheme → issuer', iso: 'MTI 0200 · DE49 978 · DE54 840', state: 'busy', dwell: 900 },
+      { icon: '✓', amount: '€ 4.20', title: 'APPROVED', sub: 'merchant settled EUR · €0.11 FX margin', iso: 'MTI 0210 · RC 00', state: 'ok', dwell: 1000 },
       { icon: '🖨️', title: 'PRINTING RECEIPT', sub: 'thermal head active', iso: '', state: 'ok', dwell: 100 },
     ];
     await playSteps(steps);
@@ -4883,15 +4883,15 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
       time: nowStamp(),
       location: 'PORTO · PT',
       trn: trnId(),
-      footer: 'Paid in USD · Teya margin captured.',
+      footer: 'Charged to card in USD · merchant settled in EUR',
       rows: [
         { k: 'Card', v: '4*** **** **** 1234 (US)' },
-        { k: 'Amount (home)', v: '$ 4.67 USD' },
-        { k: 'Amount (local)', v: '€ 4.20 EUR' },
+        { k: 'Merchant total', v: '€ 4.20 EUR' },
+        { k: 'Charged to card', v: '$ 4.67 USD' },
         { k: 'FX rate', v: '1.1113 USD/EUR' },
         { k: 'MTI', v: '0200 → 0210' },
         { k: 'Response', v: '00 · APPROVED', cls: 'ok' },
-        { k: 'Commission', v: '€ 0.11', cls: 'ok' },
+        { k: 'Teya FX margin', v: '€ 0.11', cls: 'ok' },
       ],
     });
   }
