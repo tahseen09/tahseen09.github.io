@@ -1357,6 +1357,392 @@
   }
 
   /* ═══════════════════════════════════════════════════════
+     TRANSACTION STAGE — split customer view + network trace
+     ═══════════════════════════════════════════════════════ */
+  .tx-stage {
+    display: grid;
+    grid-template-columns: minmax(280px, 1fr) minmax(320px, 1.35fr);
+    gap: 16px;
+    align-items: stretch;
+    scroll-margin-top: 80px;
+  }
+  @media (max-width: 760px) {
+    .tx-stage { grid-template-columns: 1fr; }
+  }
+
+  .tx-panel {
+    background: linear-gradient(180deg, var(--card-bg) 0%, rgba(13,17,23,0.9) 100%);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 460px;
+    position: relative;
+  }
+
+  .tx-panel-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: rgba(13,17,23,0.8);
+    border-bottom: 1px solid var(--card-border);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: var(--muted);
+  }
+  .tx-panel-head code {
+    font-family: var(--font-mono);
+    background: rgba(57,210,192,0.08);
+    color: var(--cyan);
+    padding: 2px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.04em;
+  }
+  .tx-panel-title { color: #c9d1d9; }
+  .tx-panel-meta { margin-left: auto; color: var(--muted); font-weight: 500; letter-spacing: 0.04em; }
+
+  /* Running-state dot */
+  .tx-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: txDot 2s ease-in-out infinite;
+  }
+  .tx-panel.busy .tx-dot { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); animation-duration: 0.6s; }
+  .tx-panel.ok .tx-dot   { background: var(--green); box-shadow: 0 0 10px var(--green); animation: none; }
+  .tx-panel.fail .tx-dot { background: var(--red);   box-shadow: 0 0 10px var(--red);   animation: txDot 0.4s ease-in-out infinite; }
+  @keyframes txDot { 0%,100% { opacity: 0.65; } 50% { opacity: 1; } }
+
+  /* ── Customer side ── */
+  .tx-customer-body {
+    flex: 1;
+    padding: 22px 22px 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 6px;
+  }
+  .tx-amount {
+    font-family: var(--font-mono);
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: #e8fff9;
+    letter-spacing: 0.01em;
+    text-shadow: 0 0 18px rgba(57,210,192,0.28);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+  .tx-panel.ok  .tx-amount { color: #b7ffc6; text-shadow: 0 0 20px rgba(63,185,80,0.45); }
+  .tx-panel.fail .tx-amount { color: #ffb5b1; text-shadow: 0 0 20px rgba(248,81,73,0.45); }
+
+  .tx-status {
+    font-family: var(--font-mono);
+    font-size: 0.92rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    color: var(--cyan);
+    min-height: 1.3em;
+    margin-top: 6px;
+  }
+  .tx-panel.ok  .tx-status { color: var(--green); }
+  .tx-panel.fail .tx-status { color: var(--red); }
+
+  .tx-sub {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.5;
+    max-width: 280px;
+    min-height: 1.2em;
+  }
+
+  .tx-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    margin-top: 16px;
+  }
+  .tx-actions[hidden] { display: none; }
+  .tx-action {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: rgba(57,210,192,0.04);
+    border: 1px solid rgba(57,210,192,0.2);
+    border-radius: 10px;
+    color: #d0fff4;
+    font-family: var(--font-mono);
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .tx-action:hover:not(:disabled) {
+    background: rgba(57,210,192,0.1);
+    border-color: rgba(57,210,192,0.45);
+    transform: translateX(2px);
+  }
+  .tx-action:disabled { opacity: 0.35; cursor: not-allowed; }
+  .tx-action.dcc     { border-color: rgba(210,153,34,0.22); color: #ffe9b8; background: rgba(210,153,34,0.04); }
+  .tx-action.dcc:hover:not(:disabled) { background: rgba(210,153,34,0.1); border-color: rgba(210,153,34,0.5); }
+  .tx-action.decline { border-color: rgba(248,81,73,0.22); color: #ffcfcb; background: rgba(248,81,73,0.04); }
+  .tx-action.decline:hover:not(:disabled) { background: rgba(248,81,73,0.1); border-color: rgba(248,81,73,0.5); }
+  .tx-action-icon  { font-size: 1.4rem; line-height: 1; }
+  .tx-action-body  { display: flex; flex-direction: column; gap: 2px; }
+  .tx-action-label { font-size: 0.88rem; font-weight: 700; letter-spacing: 0.04em; }
+  .tx-action-sub   { font-size: 0.68rem; color: rgba(255,255,255,0.48); letter-spacing: 0.03em; }
+  .tx-action-arrow { font-size: 1.2rem; opacity: 0.4; transition: opacity 0.2s, transform 0.2s; }
+  .tx-action:hover:not(:disabled) .tx-action-arrow { opacity: 1; transform: translateX(3px); }
+
+  .tx-result {
+    margin-top: auto;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: rgba(63,185,80,0.08);
+    border: 1px solid rgba(63,185,80,0.3);
+    text-align: left;
+    width: 100%;
+    animation: txResultIn 0.4s cubic-bezier(.2,.9,.3,1.2);
+  }
+  @keyframes txResultIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .tx-result.fail { background: rgba(248,81,73,0.08); border-color: rgba(248,81,73,0.3); }
+  .tx-result-head { font-family: var(--font-mono); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; color: var(--green); margin-bottom: 6px; }
+  .tx-result.fail .tx-result-head { color: var(--red); }
+  .tx-result-body { font-size: 0.82rem; color: #b1bac4; line-height: 1.5; }
+  .tx-result-body b { color: #e6edf3; font-weight: 600; }
+
+  /* Inline receipt that prints INTO the customer panel */
+  .tx-receipt-slot {
+    width: 100%;
+    margin-top: 14px;
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.4s ease;
+  }
+  .tx-receipt-slot.on { max-height: 400px; }
+
+  .tx-receipt-paper {
+    background: #faf6ef;
+    color: #2a2018;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    line-height: 1.5;
+    padding: 14px 16px 18px;
+    border-radius: 4px;
+    box-shadow: 0 14px 28px rgba(0,0,0,0.4), inset 0 0 30px rgba(180,150,100,0.1);
+    transform: translateY(-12px);
+    opacity: 0;
+    animation: txReceiptPrint 0.7s cubic-bezier(.2,.9,.3,1.1) forwards;
+  }
+  @keyframes txReceiptPrint {
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .tx-receipt-paper.exiting { animation: txReceiptExit 0.4s ease-in forwards; }
+  @keyframes txReceiptExit {
+    to { opacity: 0; transform: translateY(-12px) scale(0.98); max-height: 0; }
+  }
+  .tx-receipt-rule { text-align: center; color: #9e896a; letter-spacing: 1px; }
+  .tx-receipt-brand { text-align: center; font-weight: 800; letter-spacing: 0.18em; font-size: 0.78rem; margin: 2px 0; }
+  .tx-receipt-meta { text-align: center; font-size: 0.64rem; color: #6b5a45; margin-bottom: 6px; }
+  .tx-receipt-rows { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; margin: 6px 0; }
+  .tx-receipt-rows dt { color: #6b5a45; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .tx-receipt-rows dd { text-align: right; font-weight: 600; color: #2a2018; }
+  .tx-receipt-rows dd.ok   { color: #1b7a32; }
+  .tx-receipt-rows dd.fail { color: #a4281f; }
+  .tx-receipt-foot { text-align: center; font-size: 0.66rem; color: #6b5a45; font-style: italic; margin-top: 4px; }
+
+  /* ── Network trace side ── */
+  .tx-trace-timer {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--cyan);
+    background: rgba(57,210,192,0.08);
+    padding: 2px 8px;
+    border-radius: 3px;
+  }
+  .tx-panel.ok   .tx-trace-timer { color: var(--green); background: rgba(63,185,80,0.1); }
+  .tx-panel.fail .tx-trace-timer { color: var(--red);   background: rgba(248,81,73,0.1); }
+
+  .tx-trace-cols {
+    display: grid;
+    grid-template-columns: 54px 1fr 110px 54px;
+    gap: 10px;
+    padding: 6px 14px;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px dashed rgba(255,255,255,0.06);
+  }
+
+  .tx-trace-rows {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 0;
+    min-height: 260px;
+  }
+  .tx-trace-rows::-webkit-scrollbar { width: 6px; }
+  .tx-trace-rows::-webkit-scrollbar-thumb { background: rgba(57,210,192,0.22); border-radius: 3px; }
+
+  .tx-trace-empty {
+    padding: 40px 20px;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  .tx-hop {
+    display: grid;
+    grid-template-columns: 54px 1fr 110px 54px;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 14px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    border-bottom: 1px dashed rgba(255,255,255,0.04);
+    cursor: pointer;
+    transition: background 0.15s;
+    animation: txHopIn 0.3s cubic-bezier(.2,.9,.3,1.2);
+  }
+  @keyframes txHopIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  .tx-hop:hover { background: rgba(57,210,192,0.04); }
+  .tx-hop.expanded { background: rgba(57,210,192,0.06); }
+  .tx-hop-mti {
+    font-weight: 700;
+    color: var(--cyan);
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: rgba(57,210,192,0.1);
+    text-align: center;
+    font-size: 0.68rem;
+  }
+  .tx-hop.res .tx-hop-mti      { color: var(--green); background: rgba(63,185,80,0.1); }
+  .tx-hop.fail .tx-hop-mti     { color: var(--red); background: rgba(248,81,73,0.1); }
+  .tx-hop.note .tx-hop-mti     { color: var(--yellow); background: rgba(210,153,34,0.1); }
+  .tx-hop.reversal .tx-hop-mti { color: var(--magenta); background: rgba(188,140,255,0.1); }
+  .tx-hop-flow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #c9d1d9;
+    overflow: hidden;
+  }
+  .tx-hop-from, .tx-hop-to { white-space: nowrap; }
+  .tx-hop-arrow { color: var(--muted); }
+  .tx-hop.res .tx-hop-arrow { transform: scaleX(-1); }
+  .tx-hop-note { font-size: 0.64rem; color: var(--muted); font-style: italic; margin-left: auto; }
+  .tx-hop-timing {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.66rem;
+    color: var(--muted);
+  }
+  .tx-hop-bar {
+    flex: 1;
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+  .tx-hop-bar-fill {
+    height: 100%;
+    width: 0;
+    background: var(--cyan);
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+  .tx-hop.res .tx-hop-bar-fill      { background: var(--green); }
+  .tx-hop.fail .tx-hop-bar-fill     { background: var(--red); }
+  .tx-hop.note .tx-hop-bar-fill     { background: var(--yellow); }
+  .tx-hop.reversal .tx-hop-bar-fill { background: var(--magenta); }
+  .tx-hop-ms {
+    min-width: 42px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .tx-hop-size { text-align: right; color: var(--muted); font-size: 0.66rem; }
+
+  /* Divider between request leg and reversal leg */
+  .tx-hop-divider {
+    padding: 8px 14px 4px;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: var(--magenta);
+    border-top: 1px dashed rgba(188,140,255,0.3);
+    border-bottom: 1px dashed rgba(188,140,255,0.2);
+    margin: 6px 0;
+    background: rgba(188,140,255,0.04);
+  }
+
+  /* Expanded details */
+  .tx-hop-detail {
+    padding: 12px 14px 14px;
+    background: rgba(0,0,0,0.3);
+    border-bottom: 1px dashed rgba(255,255,255,0.04);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    animation: txHopIn 0.3s;
+  }
+  .tx-hop-detail-head {
+    color: var(--muted);
+    font-size: 0.56rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .tx-hop-hex {
+    background: rgba(0,0,0,0.4);
+    padding: 8px 10px;
+    border-radius: 4px;
+    color: rgba(57,210,192,0.85);
+    line-height: 1.7;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+    word-break: break-all;
+    white-space: pre-wrap;
+  }
+  .tx-hop-fields {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 3px 10px;
+  }
+  .tx-hop-fields dt { color: var(--yellow); font-size: 0.62rem; }
+  .tx-hop-fields dd { color: #e6edf3; font-size: 0.68rem; word-break: break-all; }
+  .tx-hop-fields dt.de { color: var(--cyan); }
+
+  .tx-trace-summary {
+    padding: 12px 16px;
+    border-top: 1px solid var(--card-border);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .tx-trace-summary.ok  { color: var(--green); }
+  .tx-trace-summary.fail { color: var(--red); }
+  .tx-trace-summary b { color: inherit; font-weight: 700; letter-spacing: 0.08em; }
+
+  /* ═══════════════════════════════════════════════════════
+     (legacy — unused but kept for safety)
      PAYMENT TERMINAL DEVICE
      ═══════════════════════════════════════════════════════ */
   .pay-stage {
@@ -2753,64 +3139,76 @@
     <div class="section-label"># transactions</div>
     <div class="section-title" data-brag="the rails I live on. pay attention.">Watch a card payment flow — the thing I actually build</div>
     <p style="color:var(--muted); font-size:0.95rem; margin-bottom:24px; line-height:1.6;">
-      Real-ish simulation of the payment rails Teya connects to. Tap the terminal or pick a scenario — watch the ISO 8583 message travel acquirer → scheme → issuer, see raw response codes on the display, and catch the receipt on its way out. PAN masked, HMAC computed live in your browser.
+      Pick a scenario. Watch the customer-side experience on the left and the ISO 8583 message flow on the right — side by side. Click any trace row to unfold the decoded fields. PAN masked, HMAC computed live, no network calls.
     </p>
 
-    <div class="pay-stage">
-      <!-- ── Payment terminal device (left column) ── -->
-      <div class="pay-device" id="payDevice">
-        <!-- Printer slot at the top; the receipt emerges from here -->
-        <div class="pay-slot" aria-hidden="true"></div>
-        <div class="pay-receipt-out" id="payReceiptOut" aria-hidden="true"></div>
+    <div class="tx-stage" id="txStage">
+      <!-- ── LEFT: Customer view ── -->
+      <div class="tx-panel tx-customer">
+        <div class="tx-panel-head">
+          <span class="tx-dot" id="txDot"></span>
+          <span class="tx-panel-title">CUSTOMER VIEW</span>
+          <span class="tx-panel-meta" id="txCustomerMeta">ready</span>
+        </div>
+        <div class="tx-customer-body" id="txCustomerBody">
+          <div class="tx-amount" id="txAmount">€ 0.00</div>
+          <div class="tx-status" id="txStatus">PICK A SCENARIO</div>
+          <div class="tx-sub" id="txSub">three ways a card transaction can go</div>
 
-        <div class="pay-screen" id="payScreen">
-          <!-- Always-visible header strip -->
-          <div class="pay-screen-head">
-            <div class="pay-screen-brand">
-              <span class="pay-led" id="payLed"></span>
-              <span>TEYA · POS</span>
-            </div>
-            <div class="pay-screen-chip" id="payChip">READY</div>
+          <div class="tx-actions" id="txActions">
+            <button class="tx-action approve" data-scenario="approve" type="button">
+              <span class="tx-action-icon">💳</span>
+              <span class="tx-action-body">
+                <span class="tx-action-label" data-brag="tap 💳 & flex">tap to pay</span>
+                <span class="tx-action-sub">€4.20 · local card</span>
+              </span>
+              <span class="tx-action-arrow">›</span>
+            </button>
+            <button class="tx-action dcc" data-scenario="dcc" type="button">
+              <span class="tx-action-icon">🌍</span>
+              <span class="tx-action-body">
+                <span class="tx-action-label">foreign card</span>
+                <span class="tx-action-sub">DCC · USD ⇄ EUR</span>
+              </span>
+              <span class="tx-action-arrow">›</span>
+            </button>
+            <button class="tx-action decline" data-scenario="decline" type="button">
+              <span class="tx-action-icon">⚠️</span>
+              <span class="tx-action-body">
+                <span class="tx-action-label">decline + reversal</span>
+                <span class="tx-action-sub">high-ticket · auto-retry</span>
+              </span>
+              <span class="tx-action-arrow">›</span>
+            </button>
           </div>
 
-          <div class="pay-screen-divider"></div>
+          <!-- Final result card — shown when scenario completes -->
+          <div class="tx-result" id="txResult" hidden></div>
 
-          <!-- Body: swaps between idle (buttons) and live (amount + status) -->
-          <div class="pay-screen-body">
-            <div class="pay-screen-idle" id="payIdle">
-              <div class="pay-screen-prompt">choose a scenario</div>
-              <button class="pay-action approve" data-scenario="approve" type="button">
-                <span class="pay-action-icon">💳</span>
-                <span class="pay-action-body">
-                  <span class="pay-action-label">tap to pay</span>
-                  <span class="pay-action-sub">€4.20 · local card</span>
-                </span>
-                <span class="pay-action-arrow">›</span>
-              </button>
-              <button class="pay-action dcc" data-scenario="dcc" type="button">
-                <span class="pay-action-icon">🌍</span>
-                <span class="pay-action-body">
-                  <span class="pay-action-label">foreign card</span>
-                  <span class="pay-action-sub">DCC · USD ⇄ EUR</span>
-                </span>
-                <span class="pay-action-arrow">›</span>
-              </button>
-              <button class="pay-action decline" data-scenario="decline" type="button">
-                <span class="pay-action-icon">⚠️</span>
-                <span class="pay-action-body">
-                  <span class="pay-action-label">decline + reversal</span>
-                  <span class="pay-action-sub">high-ticket · auto-retry</span>
-                </span>
-                <span class="pay-action-arrow">›</span>
-              </button>
-            </div>
+          <!-- Inline receipt (approve/dcc only) -->
+          <div class="tx-receipt-slot" id="txReceipt" aria-hidden="true"></div>
+        </div>
+      </div>
 
-            <div class="pay-screen-live" id="payLive" hidden>
-              <!-- One step at a time — step replaces content with an enter animation -->
-              <div class="pay-step-stage" id="payStage"></div>
-            </div>
+      <!-- ── RIGHT: Network trace ── -->
+      <div class="tx-panel tx-trace">
+        <div class="tx-panel-head">
+          <span class="tx-panel-title">NETWORK TRACE</span>
+          <span class="tx-panel-meta"><code>ISO 8583</code></span>
+          <span class="tx-trace-timer" id="txTimer">—</span>
+        </div>
+        <div class="tx-trace-cols">
+          <span>MTI</span>
+          <span>flow</span>
+          <span>timing</span>
+          <span>size</span>
+        </div>
+        <div class="tx-trace-rows" id="txTraceRows">
+          <div class="tx-trace-empty">
+            Pick a scenario — each ISO 8583 hop will appear here with its latency, size and response code. Click any row to see the decoded message.
           </div>
         </div>
+        <div class="tx-trace-summary" id="txTraceSummary"></div>
       </div>
     </div>
   </div>
@@ -4689,144 +5087,74 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
 })();
 
 // ═══════════════════════════════════════════════════════════
-// PAYMENT SIMULATOR — ISO 8583 / BASE24-flavored transaction flow
+// TRANSACTION STAGE — split customer view + ISO 8583 network trace
 // ═══════════════════════════════════════════════════════════
 (function() {
   const buttons = Array.from(document.querySelectorAll('[data-scenario]'));
   if (!buttons.length) return;
 
+  // DOM refs
+  const stage        = document.getElementById('txStage');
+  const customerBody = document.getElementById('txCustomerBody');
+  const customerMeta = document.getElementById('txCustomerMeta');
+  const amountEl     = document.getElementById('txAmount');
+  const statusEl     = document.getElementById('txStatus');
+  const subEl        = document.getElementById('txSub');
+  const actions      = document.getElementById('txActions');
+  const resultEl     = document.getElementById('txResult');
+  const receiptSlot  = document.getElementById('txReceipt');
+  const traceRows    = document.getElementById('txTraceRows');
+  const traceSummary = document.getElementById('txTraceSummary');
+  const timerEl      = document.getElementById('txTimer');
+  const customerPanel = stage && stage.querySelector('.tx-customer');
+  const tracePanel    = stage && stage.querySelector('.tx-trace');
+
   let running = false;
-
-  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-  // Play a declarative sequence of terminal steps.
-  // Each step spec: { icon | spinner, amount, title, sub, iso, state, dwell }
-  async function playSteps(steps) {
-    for (const step of steps) {
-      setStep(step);
-      await sleep(step.dwell != null ? step.dwell : 700);
-    }
-  }
-
-  // ── Terminal screen state ────────────────────────────────
-  const pay = {
-    device: document.getElementById('payDevice'),
-    screen: document.getElementById('payScreen'),
-    chip:   document.getElementById('payChip'),
-    idle:   document.getElementById('payIdle'),
-    live:   document.getElementById('payLive'),
-    stage:  document.getElementById('payStage'),
-  };
-  const CHIP_LABELS = { ready: 'READY', busy: 'BUSY', ok: 'APPROVED', fail: 'DECLINED' };
-
-  function setPayState(state) {
-    if (!pay.screen) return;
-    pay.screen.classList.remove('busy', 'ok', 'fail');
-    if (pay.device) pay.device.classList.remove('running', 'ok', 'fail');
-    if (state === 'busy')  { pay.screen.classList.add('busy');  pay.device && pay.device.classList.add('running'); }
-    if (state === 'ok')    { pay.screen.classList.add('ok');    pay.device && pay.device.classList.add('ok'); }
-    if (state === 'fail')  { pay.screen.classList.add('fail');  pay.device && pay.device.classList.add('fail'); }
-    if (pay.chip) pay.chip.textContent = CHIP_LABELS[state] || 'READY';
-  }
-  function showIdle() {
-    if (pay.idle) pay.idle.hidden = false;
-    if (pay.live) pay.live.hidden = true;
-  }
-  function showLive() {
-    if (pay.idle) pay.idle.hidden = true;
-    if (pay.live) pay.live.hidden = false;
-  }
-
-  /**
-   * Render a single step on the terminal, replacing whatever was there.
-   * spec: { icon, spinner, amount, title, sub, iso, state }
-   */
-  function setStep(spec) {
-    if (!pay.stage) return;
-    const state = spec.state || 'busy';
-    setPayState(state);
-
-    const parts = [];
-    if (spec.spinner) parts.push('<div class="pay-step-spinner"></div>');
-    else if (spec.icon) parts.push(`<div class="pay-step-icon">${spec.icon}</div>`);
-    if (spec.amount) parts.push(`<div class="pay-step-amount">${spec.amount}</div>`);
-    if (spec.title)  parts.push(`<div class="pay-step-title">${spec.title}</div>`);
-    if (spec.sub)    parts.push(`<div class="pay-step-sub">${spec.sub}</div>`);
-    if (spec.iso)    parts.push(`<div class="pay-step-iso">${spec.iso}</div>`);
-
-    pay.stage.innerHTML = `<div class="pay-step ${state}">${parts.join('')}</div>`;
-  }
-
-  function resetScreen() {
-    setPayState('ready');
-    if (pay.stage) pay.stage.innerHTML = '';
-    showIdle();
-  }
-
-  // ── Receipt renderer — receipt extrudes from terminal slot ──
-  const receiptOut = document.getElementById('payReceiptOut');
   let receiptTimer = null;
-  let receiptExitTimer = null;
 
-  function clearReceipt() {
-    if (!receiptOut) return;
-    if (receiptTimer) { clearTimeout(receiptTimer); receiptTimer = null; }
-    if (receiptExitTimer) { clearTimeout(receiptExitTimer); receiptExitTimer = null; }
-    receiptOut.innerHTML = '';
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+  // ── State ─────────────────────────────────────────────────
+  function setPanelState(state) {
+    [customerPanel, tracePanel].forEach(p => {
+      if (!p) return;
+      p.classList.remove('busy', 'ok', 'fail');
+      if (state && state !== 'ready') p.classList.add(state);
+    });
+    if (customerMeta) customerMeta.textContent = state === 'busy' ? 'processing…' : state === 'ok' ? 'approved' : state === 'fail' ? 'declined' : 'ready';
   }
-  function dismissReceipt() {
-    if (!receiptOut) return;
-    const paper = receiptOut.querySelector('.pay-receipt-paper');
-    if (!paper || paper.classList.contains('exiting')) return;
-    paper.classList.remove('printing');
-    paper.classList.add('exiting');
-    receiptExitTimer = setTimeout(() => {
-      receiptOut.innerHTML = '';
-    }, 820);
+  function setCustomer({ amount, status, sub }) {
+    if (amount !== undefined && amountEl) amountEl.textContent = amount;
+    if (status !== undefined && statusEl) statusEl.textContent = status;
+    if (sub !== undefined && subEl) subEl.innerHTML = sub;
   }
-  function renderReceipt(data) {
-    if (!receiptOut) return;
-    const rule = '<div class="sim-receipt-rule">· · · · · · · · · · · · · · · · · · ·</div>';
-    const bars = Array.from({length: 28}, () => {
-      const h = 12 + Math.random() * 12;
-      return `<span style="height:${h}px"></span>`;
-    }).join('');
-    const rows = data.rows.map(r => `<dt>${r.k}</dt><dd class="${r.cls || ''}">${r.v}</dd>`).join('');
-    receiptOut.innerHTML = `
-      <div class="pay-receipt-paper sim-receipt-paper" role="dialog" aria-label="Transaction receipt">
-        ${rule}
-        <div class="sim-receipt-brand">TEYA · POS</div>
-        <div class="sim-receipt-meta">${data.time} · ${data.location}</div>
-        ${rule}
-        <dl class="sim-receipt-body">${rows}</dl>
-        ${rule}
-        <div class="sim-receipt-foot">${data.footer}</div>
-        <div class="sim-receipt-barcode">${bars}</div>
-        <div class="sim-receipt-sig">TRN ${data.trn}</div>
-      </div>
-    `;
-    const paper = receiptOut.querySelector('.pay-receipt-paper');
-    // Force a reflow before adding the animation class so it restarts reliably.
-    void paper.offsetWidth;
-    paper.classList.add('printing');
-    paper.addEventListener('click', dismissReceipt, { once: true });
-    // Print (~1.6s) + ~1.2s dwell → exit
-    if (receiptTimer) clearTimeout(receiptTimer);
-    receiptTimer = setTimeout(dismissReceipt, 2800);
+  function showActions(show) {
+    if (actions) actions.hidden = !show;
   }
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && receiptOut && receiptOut.querySelector('.pay-receipt-paper')) dismissReceipt();
-  });
+  function clearResult() { if (resultEl) { resultEl.hidden = true; resultEl.innerHTML = ''; resultEl.classList.remove('fail'); } }
+  function showResult({ head, body, kind = 'ok' }) {
+    if (!resultEl) return;
+    resultEl.classList.toggle('fail', kind === 'fail');
+    resultEl.innerHTML = `<div class="tx-result-head">${head}</div><div class="tx-result-body">${body}</div>`;
+    resultEl.hidden = false;
+  }
+  function clearTrace() {
+    if (traceRows) traceRows.innerHTML = '';
+    if (traceSummary) { traceSummary.textContent = ''; traceSummary.className = 'tx-trace-summary'; }
+    if (timerEl) timerEl.textContent = '—';
+  }
+  function setTraceEmpty() {
+    if (!traceRows) return;
+    traceRows.innerHTML = `<div class="tx-trace-empty">Pick a scenario — each ISO 8583 hop will appear here with its latency, size and response code. Click any row to see the decoded message.</div>`;
+  }
+
+  // ── Utility ───────────────────────────────────────────────
+  function stan() { return String(Math.floor(Math.random() * 900000) + 100000); }
+  function trnId() { return 'TRN-' + Date.now().toString(36).toUpperCase(); }
   function nowStamp() {
     const d = new Date();
     return d.toTimeString().slice(0,5) + ' · ' + d.toISOString().slice(0,10);
   }
-
-  // Generate a pseudo-random STAN (6 digits) and TRN ID
-  function stan() { return String(Math.floor(Math.random() * 900000) + 100000); }
-  function trnId() { return 'TRN-' + Date.now().toString(36).toUpperCase(); }
-
-  // Compute HMAC-SHA256(key, body) hex, demonstrating the "API idempotency via HMAC-SHA256" bullet.
   async function hmac256(keyStr, bodyStr) {
     const enc = new TextEncoder();
     const key = await crypto.subtle.importKey('raw', enc.encode(keyStr),
@@ -4834,24 +5162,209 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
     const sig = await crypto.subtle.sign('HMAC', key, enc.encode(bodyStr));
     return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2,'0')).join('');
   }
+  // Fake-but-plausible raw ISO 8583 hex header for a request
+  function fakeHex(mti, bytes) {
+    // Build a short, realistic-looking 2-byte length + 2-byte MTI prefix
+    const len = bytes.toString(16).padStart(4, '0');
+    const mtiBytes = mti.match(/.{1,2}/g).join(' ');
+    const bitmap = '70 24 00 00 00 00 00 00'; // plausible primary bitmap
+    const body = Array.from({length: Math.max(0, Math.min(32, bytes - 12))}, () =>
+      Math.floor(Math.random() * 256).toString(16).padStart(2, '0')
+    ).join(' ');
+    return `${len.slice(0,2)} ${len.slice(2,4)} ${mtiBytes} ${bitmap}  ${body}…`;
+  }
 
-  // ── Scenarios — declarative step sequences ──
+  // ── Trace row rendering ───────────────────────────────────
+  /**
+   * Add a hop row. Returns the <div> so callers can animate the timing bar.
+   * hop: {
+   *   mti, from, to, ms, bytes, cls: 'req'|'res'|'fail'|'note'|'reversal',
+   *   note, fields, rc, done
+   * }
+   */
+  function addHop(hop) {
+    if (!traceRows) return null;
+    // Remove empty-state if present
+    const empty = traceRows.querySelector('.tx-trace-empty');
+    if (empty) empty.remove();
+
+    const row = document.createElement('div');
+    row.className = 'tx-hop ' + (hop.cls || 'req');
+    row.tabIndex = 0;
+    const arrow = hop.cls === 'res' ? '←' : '→';
+    const mti = hop.mti || '···';
+    const size = hop.bytes ? `${hop.bytes}B` : '—';
+    const ms = hop.ms != null ? `${hop.ms}ms` : '—';
+    const note = hop.note ? `<span class="tx-hop-note">${hop.note}</span>` : '';
+    row.innerHTML = `
+      <span class="tx-hop-mti">${mti}</span>
+      <span class="tx-hop-flow">
+        <span class="tx-hop-from">${hop.from}</span>
+        <span class="tx-hop-arrow">${arrow}</span>
+        <span class="tx-hop-to">${hop.to}</span>
+        ${note}
+      </span>
+      <span class="tx-hop-timing">
+        <span class="tx-hop-bar"><span class="tx-hop-bar-fill"></span></span>
+        <span class="tx-hop-ms">${ms}</span>
+      </span>
+      <span class="tx-hop-size">${size}</span>
+    `;
+    traceRows.appendChild(row);
+
+    // Animate the bar proportionally to latency (max 50ms of display time).
+    const bar = row.querySelector('.tx-hop-bar-fill');
+    requestAnimationFrame(() => {
+      const ratio = hop.ms ? Math.min(1, hop.ms / 60) : 0.4;
+      bar.style.width = (ratio * 100) + '%';
+    });
+
+    // Click to expand → decoded hex + fields
+    row.addEventListener('click', () => toggleDetail(row, hop));
+    row.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleDetail(row, hop); }
+    });
+
+    // Auto-scroll to latest
+    traceRows.scrollTop = traceRows.scrollHeight;
+    return row;
+  }
+
+  function addDivider(text) {
+    if (!traceRows) return null;
+    const d = document.createElement('div');
+    d.className = 'tx-hop-divider';
+    d.textContent = text;
+    traceRows.appendChild(d);
+    traceRows.scrollTop = traceRows.scrollHeight;
+    return d;
+  }
+
+  function toggleDetail(row, hop) {
+    const existing = row.nextElementSibling;
+    if (existing && existing.classList.contains('tx-hop-detail')) {
+      existing.remove();
+      row.classList.remove('expanded');
+      return;
+    }
+    row.classList.add('expanded');
+
+    const detail = document.createElement('div');
+    detail.className = 'tx-hop-detail';
+
+    const hex = hop.bytes ? fakeHex(hop.mti || '0000', hop.bytes) : '';
+    const fields = hop.fields || [];
+    const fieldRows = fields.map(f => {
+      const keyCls = /^DE/.test(f.k) ? 'de' : '';
+      return `<dt class="${keyCls}">${f.k}</dt><dd>${f.v}</dd>`;
+    }).join('');
+
+    detail.innerHTML = `
+      ${hex ? `<div class="tx-hop-detail-head">raw hex (truncated)</div><div class="tx-hop-hex">${hex}</div>` : ''}
+      ${fieldRows ? `<div class="tx-hop-detail-head">decoded fields</div><dl class="tx-hop-fields">${fieldRows}</dl>` : ''}
+      ${!hex && !fieldRows ? '<div class="tx-hop-detail-head">no body</div>' : ''}
+    `;
+    row.after(detail);
+    traceRows.scrollTop = Math.min(
+      traceRows.scrollHeight,
+      row.offsetTop - 8
+    );
+  }
+
+  // ── Inline receipt (approve/dcc) ──────────────────────────
+  function clearReceipt() {
+    if (!receiptSlot) return;
+    if (receiptTimer) { clearTimeout(receiptTimer); receiptTimer = null; }
+    receiptSlot.classList.remove('on');
+    receiptSlot.innerHTML = '';
+  }
+  function renderReceipt(data) {
+    if (!receiptSlot) return;
+    const rule = '<div class="tx-receipt-rule">· · · · · · · · · · · · · · · · · · ·</div>';
+    const rows = data.rows.map(r => `<dt>${r.k}</dt><dd class="${r.cls || ''}">${r.v}</dd>`).join('');
+    receiptSlot.innerHTML = `
+      <div class="tx-receipt-paper">
+        ${rule}
+        <div class="tx-receipt-brand">TEYA · POS</div>
+        <div class="tx-receipt-meta">${data.time} · ${data.location} · TRN ${data.trn.slice(-6)}</div>
+        ${rule}
+        <dl class="tx-receipt-rows">${rows}</dl>
+        ${rule}
+        <div class="tx-receipt-foot">${data.footer}</div>
+      </div>
+    `;
+    receiptSlot.classList.add('on');
+    if (receiptTimer) clearTimeout(receiptTimer);
+    receiptTimer = setTimeout(() => {
+      const paper = receiptSlot.querySelector('.tx-receipt-paper');
+      if (paper) paper.classList.add('exiting');
+      setTimeout(() => { receiptSlot.classList.remove('on'); receiptSlot.innerHTML = ''; }, 420);
+    }, 2600);
+  }
+
+  // ── Scenarios ─────────────────────────────────────────────
   async function runApprove() {
     const s = stan(), id = trnId();
     const sig = await hmac256('teya-idempotency-key-2026',
       `MTI=0200|PAN=4***1234|AMT=420|STAN=${s}|TRN=${id}`);
 
-    const steps = [
-      { icon: '💳', title: 'WAITING FOR CARD', sub: 'tap, insert or swipe', iso: '', state: 'busy', dwell: 700 },
-      { icon: '💳', amount: '€ 4.20', title: 'CARD DETECTED', sub: 'Visa · PAN 4*** 1234', iso: 'ICC applet AID A0000000031010', state: 'busy', dwell: 700 },
-      { spinner: true, amount: '€ 4.20', title: 'AUTHORIZING', sub: 'framing ISO 8583 request', iso: `MTI 0200 · DE4 000000000420 · STAN ${s}`, state: 'busy', dwell: 900 },
-      { spinner: true, amount: '€ 4.20', title: 'ROUTING', sub: 'acquirer → scheme', iso: `HMAC ${sig.slice(0,20)}…`, state: 'busy', dwell: 700 },
-      { spinner: true, amount: '€ 4.20', title: 'ROUTING', sub: 'scheme → issuer', iso: 'BIN 4*** · routing currency 978', state: 'busy', dwell: 700 },
-      { spinner: true, amount: '€ 4.20', title: 'AWAITING ISSUER', sub: 'risk check · funds check', iso: 'timeout 8s · 3DS skipped (low-ticket)', state: 'busy', dwell: 900 },
-      { icon: '✓', amount: '€ 4.20', title: 'APPROVED', sub: 'auth code A9FZ21', iso: 'MTI 0210 · RC 00', state: 'ok', dwell: 900 },
-      { icon: '🖨️', title: 'PRINTING RECEIPT', sub: 'thermal head active', iso: '', state: 'ok', dwell: 100 },
+    setCustomer({ amount: '€ 4.20', status: 'READING CARD…', sub: 'Visa · PAN 4*** 1234' });
+    setPanelState('busy');
+    await sleep(500);
+
+    let total = 0;
+    const reqFields = [
+      { k: 'MTI',  v: '0200 (auth request)' },
+      { k: 'DE2  PAN',       v: '4*** **** **** 1234' },
+      { k: 'DE3  proc code', v: '00 0000 (purchase)' },
+      { k: 'DE4  amount',    v: '€ 4.20 · 000000000420' },
+      { k: 'DE11 STAN',      v: s },
+      { k: 'DE41 term ID',   v: 'TERM-PT-OPO-042' },
+      { k: 'DE49 currency',  v: '978 (EUR)' },
+      { k: 'HMAC-SHA256',    v: sig.slice(0,32) + '…' },
     ];
-    await playSteps(steps);
+    const resFields = (authCode) => [
+      { k: 'MTI',  v: '0210 (auth response)' },
+      { k: 'DE39 resp code', v: '00 (approved)' },
+      { k: 'DE38 auth code', v: authCode },
+    ];
+
+    addHop({ mti: '0200', from: 'POS', to: 'Acquirer', ms: 24, bytes: 124, cls: 'req', fields: reqFields }); total += 24;
+    setCustomer({ status: 'AUTHORIZING…', sub: 'acquirer received' });
+    await sleep(260);
+
+    addHop({ mti: '0200', from: 'Acquirer', to: 'Scheme', ms: 18, bytes: 128, cls: 'req', note: 'HMAC verified', fields: reqFields }); total += 18;
+    setCustomer({ sub: 'routing to Visa scheme' });
+    await sleep(260);
+
+    addHop({ mti: '0200', from: 'Scheme', to: 'Issuer', ms: 22, bytes: 132, cls: 'req', note: 'BIN 4*** routed', fields: reqFields }); total += 22;
+    setCustomer({ status: 'AWAITING ISSUER…', sub: 'risk + funds check' });
+    await sleep(300);
+
+    addHop({ mti: '···', from: 'Issuer', to: 'Issuer', ms: 45, cls: 'note', note: '3DS skipped · low-ticket',
+      fields: [{ k: 'check', v: 'velocity OK · funds OK · fraud score 0.12' }] }); total += 45;
+    await sleep(300);
+
+    addHop({ mti: '0210', from: 'Issuer', to: 'Scheme', ms: 18, bytes: 96, cls: 'res', fields: resFields('A9FZ21') }); total += 18;
+    await sleep(220);
+    addHop({ mti: '0210', from: 'Scheme', to: 'Acquirer', ms: 16, bytes: 98, cls: 'res', fields: resFields('A9FZ21') }); total += 16;
+    await sleep(220);
+    addHop({ mti: '0210', from: 'Acquirer', to: 'POS', ms: 12, bytes: 100, cls: 'res', fields: resFields('A9FZ21') }); total += 12;
+
+    if (timerEl) timerEl.textContent = total + 'ms';
+    setCustomer({ status: '✓ APPROVED', sub: `auth A9FZ21 · ${total}ms round-trip` });
+    setPanelState('ok');
+    if (traceSummary) {
+      traceSummary.className = 'tx-trace-summary ok';
+      traceSummary.innerHTML = `<b>✓ APPROVED</b> · ${total}ms end-to-end · 7 hops · click any row for raw message`;
+    }
+
+    await sleep(300);
+    showResult({
+      head: '✓ transaction approved',
+      body: `<b>€ 4.20</b> authorized · auth code <b>A9FZ21</b> · STAN ${s}`,
+      kind: 'ok',
+    });
 
     renderReceipt({
       time: nowStamp(),
@@ -4859,79 +5372,199 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
       trn: id,
       footer: 'Thank you. Have a nice day. 🫡',
       rows: [
-        { k: 'Card', v: '4*** **** **** 1234' },
-        { k: 'Amount', v: '€ 4.20' },
-        { k: 'MTI', v: '0200 → 0210' },
-        { k: 'Auth code', v: 'A9FZ21', cls: 'ok' },
-        { k: 'Response', v: '00 · APPROVED', cls: 'ok' },
-        { k: 'STAN', v: s },
+        { k: 'Card',       v: '4*** 1234' },
+        { k: 'Amount',     v: '€ 4.20' },
+        { k: 'MTI',        v: '0200 → 0210' },
+        { k: 'Auth code',  v: 'A9FZ21', cls: 'ok' },
+        { k: 'Response',   v: '00 · APPROVED', cls: 'ok' },
+        { k: 'STAN',       v: s },
       ],
     });
   }
 
   async function runDcc() {
-    const steps = [
-      { icon: '💳', title: 'WAITING FOR CARD', sub: 'tap, insert or swipe', iso: '', state: 'busy', dwell: 700 },
-      { icon: '🌍', amount: '€ 4.20', title: 'FOREIGN CARD', sub: 'USD card · EUR terminal', iso: 'card CCY 840 · term CCY 978', state: 'busy', dwell: 800 },
-      { spinner: true, amount: '€ 4.20', title: 'FETCHING FX RATE', sub: 'Teya DCC engine · live Visa rate', iso: 'base 1.0842 · margin +2.5%', state: 'busy', dwell: 900 },
-      { icon: '💱', title: 'CHOOSE CURRENCY', sub: 'cardholder picks:<br>$4.67 USD &nbsp; or &nbsp; €4.20 EUR', iso: 'DE54 quote · rate 1.1113', state: 'busy', dwell: 1200 },
-      { icon: '🇺🇸', amount: '€ 4.20', title: 'USD SELECTED', sub: 'cardholder billed $4.67 · merchant settles €4.20', iso: 'DE54 · USD 467 @ 1.1113', state: 'busy', dwell: 1000 },
-      { spinner: true, amount: '€ 4.20', title: 'AUTHORIZING', sub: 'acquirer → scheme → issuer', iso: 'MTI 0200 · DE49 978 · DE54 840', state: 'busy', dwell: 900 },
-      { icon: '✓', amount: '€ 4.20', title: 'APPROVED', sub: 'merchant settled EUR · €0.11 FX margin', iso: 'MTI 0210 · RC 00', state: 'ok', dwell: 1000 },
-      { icon: '🖨️', title: 'PRINTING RECEIPT', sub: 'thermal head active', iso: '', state: 'ok', dwell: 100 },
+    const s = stan(), id = trnId();
+    setCustomer({ amount: '€ 4.20', status: 'READING CARD…', sub: 'Visa · USD-issued (US)' });
+    setPanelState('busy');
+    await sleep(500);
+
+    let total = 0;
+    const reqBase = [
+      { k: 'MTI',  v: '0200 (auth request)' },
+      { k: 'DE2  PAN',      v: '4*** **** **** 1234 (US)' },
+      { k: 'DE4  amount',   v: '€ 4.20 · 000000000420' },
+      { k: 'DE11 STAN',     v: s },
+      { k: 'DE49 txn CCY',  v: '978 (EUR)' },
+      { k: 'card CCY',      v: '840 (USD) — DCC candidate' },
     ];
-    await playSteps(steps);
+    addHop({ mti: '0200', from: 'POS', to: 'Acquirer', ms: 24, bytes: 128, cls: 'req', fields: reqBase }); total += 24;
+    setCustomer({ status: 'DCC OFFER', sub: 'fetching live FX rate…' });
+    await sleep(420);
+
+    addHop({ mti: '···', from: 'Acquirer', to: 'Teya DCC', ms: 65, cls: 'note', note: 'FX quote',
+      fields: [
+        { k: 'base rate',  v: '1.0842 USD/EUR' },
+        { k: 'margin',     v: '+2.5% (FX commission)' },
+        { k: 'quoted',     v: '1.1113 USD/EUR' },
+        { k: 'USD total',  v: '$ 4.67' },
+      ],
+    }); total += 65;
+    setCustomer({
+      status: 'CHOOSE CURRENCY',
+      sub: '<b>$4.67 USD</b> &nbsp; or &nbsp; <b>€4.20 EUR</b><br><span style="color:var(--muted);font-size:0.7rem">cardholder picks…</span>'
+    });
+    await sleep(1100);
+
+    addHop({ mti: '···', from: 'Cardholder', to: 'Acquirer', ms: 12, cls: 'note', note: 'USD selected',
+      fields: [{ k: 'DE54', v: 'USD 467 @ 1.1113 (cardholder currency amount)' }],
+    }); total += 12;
+    setCustomer({ status: 'AUTHORIZING…', sub: 'merchant settles EUR · cardholder billed USD' });
+    await sleep(300);
+
+    const dccFields = [...reqBase, { k: 'DE54', v: 'USD 467 @ 1.1113' }];
+    addHop({ mti: '0200', from: 'Acquirer', to: 'Scheme', ms: 18, bytes: 142, cls: 'req', fields: dccFields }); total += 18;
+    await sleep(220);
+    addHop({ mti: '0200', from: 'Scheme', to: 'Issuer', ms: 22, bytes: 142, cls: 'req', note: 'US issuer', fields: dccFields }); total += 22;
+    await sleep(300);
+
+    const resF = [
+      { k: 'MTI',  v: '0210 (auth response)' },
+      { k: 'DE39 resp code', v: '00 (approved)' },
+      { k: 'DE38 auth code', v: 'B7UK12' },
+    ];
+    addHop({ mti: '0210', from: 'Issuer', to: 'Scheme',  ms: 20, bytes: 108, cls: 'res', fields: resF }); total += 20;
+    await sleep(200);
+    addHop({ mti: '0210', from: 'Scheme', to: 'Acquirer', ms: 16, bytes: 108, cls: 'res', fields: resF }); total += 16;
+    await sleep(200);
+    addHop({ mti: '0210', from: 'Acquirer', to: 'POS', ms: 12, bytes: 108, cls: 'res', fields: resF }); total += 12;
+
+    if (timerEl) timerEl.textContent = total + 'ms';
+    setCustomer({ status: '✓ APPROVED', sub: 'charged $4.67 USD · merchant gets €4.20' });
+    setPanelState('ok');
+    if (traceSummary) {
+      traceSummary.className = 'tx-trace-summary ok';
+      traceSummary.innerHTML = `<b>✓ APPROVED · DCC</b> · ${total}ms · Teya captured €0.11 FX margin`;
+    }
+
+    showResult({
+      head: '✓ DCC transaction approved',
+      body: `Cardholder billed <b>$ 4.67 USD</b> · merchant settled <b>€ 4.20 EUR</b> · Teya FX margin <b>€ 0.11</b>`,
+      kind: 'ok',
+    });
 
     renderReceipt({
       time: nowStamp(),
       location: 'PORTO · PT',
-      trn: trnId(),
+      trn: id,
       footer: 'Charged to card in USD · merchant settled in EUR',
       rows: [
-        { k: 'Card', v: '4*** **** **** 1234 (US)' },
+        { k: 'Card',           v: '4*** 1234 (US)' },
         { k: 'Merchant total', v: '€ 4.20 EUR' },
-        { k: 'Charged to card', v: '$ 4.67 USD' },
-        { k: 'FX rate', v: '1.1113 USD/EUR' },
-        { k: 'MTI', v: '0200 → 0210' },
-        { k: 'Response', v: '00 · APPROVED', cls: 'ok' },
-        { k: 'Teya FX margin', v: '€ 0.11', cls: 'ok' },
+        { k: 'Charged to card',v: '$ 4.67 USD' },
+        { k: 'FX rate',        v: '1.1113' },
+        { k: 'Response',       v: '00 · APPROVED', cls: 'ok' },
+        { k: 'FX margin',      v: '€ 0.11', cls: 'ok' },
       ],
     });
   }
 
   async function runDecline() {
     const s = stan();
-    const steps = [
-      { icon: '💳', title: 'WAITING FOR CARD', sub: 'tap, insert or swipe', iso: '', state: 'busy', dwell: 600 },
-      { icon: '💳', amount: '€ 999.00', title: 'HIGH-TICKET', sub: 'velocity check arming', iso: `MTI 0200 · DE4 000000099900 · STAN ${s}`, state: 'busy', dwell: 700 },
-      { spinner: true, amount: '€ 999.00', title: 'AUTHORIZING', sub: 'acquirer → scheme → issuer', iso: 'MTI 0200 · routing', state: 'busy', dwell: 800 },
-      { spinner: true, amount: '€ 999.00', title: 'AWAITING ISSUER', sub: 'risk check · funds check', iso: 'velocity eval', state: 'busy', dwell: 900 },
-      { icon: '✕', amount: '€ 999.00', title: 'DECLINED', sub: 'do not honor · issuer fraud signal', iso: 'MTI 0210 · RC 05', state: 'fail', dwell: 1400 },
+    setCustomer({ amount: '€ 999.00', status: 'READING CARD…', sub: 'high-ticket purchase' });
+    setPanelState('busy');
+    await sleep(500);
 
-      // Reversal sequence
-      { icon: '↺', title: 'AUTO-REVERSAL', sub: 'releasing the auth hold', iso: 'MTI 0420 · retry policy: exponential', state: 'busy', dwell: 700 },
-      { spinner: true, title: 'REVERSAL · ATTEMPT 1/3', sub: 'acquirer → scheme', iso: 'backoff +0.8s', state: 'busy', dwell: 700 },
-      { icon: '⌛', title: 'TIMEOUT', sub: 'no response from scheme — retrying', iso: 'attempt 1 · failed', state: 'fail', dwell: 700 },
-      { spinner: true, title: 'REVERSAL · ATTEMPT 2/3', sub: 'acquirer → scheme', iso: 'backoff +1.4s', state: 'busy', dwell: 700 },
-      { icon: '⌛', title: 'TIMEOUT', sub: 'no response from scheme — retrying', iso: 'attempt 2 · failed', state: 'fail', dwell: 700 },
-      { spinner: true, title: 'REVERSAL · ATTEMPT 3/3', sub: 'scheme → issuer', iso: 'backoff +2.4s', state: 'busy', dwell: 900 },
-      { icon: '✓', title: 'AUTH HOLD RELEASED', sub: 'reversal accepted · statement clean', iso: 'MTI 0430 · RC 00', state: 'ok', dwell: 900 },
+    let total = 0;
+    const reqFields = [
+      { k: 'MTI',  v: '0200' },
+      { k: 'DE2  PAN',    v: '4*** **** **** 1234' },
+      { k: 'DE4  amount', v: '€ 999.00 · 000000099900' },
+      { k: 'DE11 STAN',   v: s },
+      { k: 'DE49 CCY',    v: '978 (EUR)' },
     ];
-    await playSteps(steps);
-    // No receipt on decline — the paper stays in the roll.
+    addHop({ mti: '0200', from: 'POS', to: 'Acquirer', ms: 24, bytes: 124, cls: 'req', fields: reqFields }); total += 24;
+    await sleep(220);
+    addHop({ mti: '0200', from: 'Acquirer', to: 'Scheme', ms: 18, bytes: 128, cls: 'req', fields: reqFields }); total += 18;
+    await sleep(220);
+    addHop({ mti: '0200', from: 'Scheme', to: 'Issuer', ms: 22, bytes: 132, cls: 'req', fields: reqFields }); total += 22;
+    setCustomer({ status: 'AWAITING ISSUER…', sub: 'velocity + risk eval' });
+    await sleep(300);
+
+    addHop({ mti: '···', from: 'Issuer', to: 'Issuer', ms: 38, cls: 'fail', note: 'fraud signal',
+      fields: [{ k: 'check', v: 'velocity exceeded · fraud score 0.87' }] }); total += 38;
+    await sleep(240);
+
+    const declineF = [
+      { k: 'MTI',  v: '0210' },
+      { k: 'DE39 resp code', v: '05 (do not honor)' },
+    ];
+    addHop({ mti: '0210', from: 'Issuer', to: 'Scheme', ms: 18, bytes: 72, cls: 'fail', fields: declineF }); total += 18;
+    await sleep(200);
+    addHop({ mti: '0210', from: 'Scheme', to: 'Acquirer', ms: 16, bytes: 72, cls: 'fail', fields: declineF }); total += 16;
+    await sleep(200);
+    addHop({ mti: '0210', from: 'Acquirer', to: 'POS', ms: 12, bytes: 72, cls: 'fail', fields: declineF }); total += 12;
+
+    setCustomer({ status: '✕ DECLINED', sub: 'do not honor · auto-reversal pending' });
+    setPanelState('fail');
+    if (timerEl) timerEl.textContent = total + 'ms';
+
+    await sleep(600);
+
+    // Reversal cycle
+    addDivider('── auto-reversal · exponential backoff ──');
+    const revF = [
+      { k: 'MTI', v: '0420 (reversal)' },
+      { k: 'DE90 orig data', v: `${s} · €999.00` },
+      { k: 'policy', v: 'exponential backoff · max 3 retries' },
+    ];
+
+    // Attempt 1 — timeout
+    addHop({ mti: '0420', from: 'Acquirer', to: 'Scheme', ms: 800, cls: 'reversal', note: 'attempt 1 · backoff +0.8s', bytes: 112, fields: revF }); total += 800;
+    await sleep(600);
+    addHop({ mti: '···', from: 'Scheme', to: 'Acquirer', ms: 0, cls: 'fail', note: 'timeout',
+      fields: [{ k: 'result', v: 'no response — retrying' }] });
+    await sleep(260);
+
+    // Attempt 2 — timeout
+    addHop({ mti: '0420', from: 'Acquirer', to: 'Scheme', ms: 1400, cls: 'reversal', note: 'attempt 2 · backoff +1.4s', bytes: 112, fields: revF }); total += 1400;
+    await sleep(600);
+    addHop({ mti: '···', from: 'Scheme', to: 'Acquirer', ms: 0, cls: 'fail', note: 'timeout',
+      fields: [{ k: 'result', v: 'no response — retrying' }] });
+    await sleep(260);
+
+    // Attempt 3 — succeeds
+    addHop({ mti: '0420', from: 'Acquirer', to: 'Scheme', ms: 2400, cls: 'reversal', note: 'attempt 3 · backoff +2.4s', bytes: 112, fields: revF }); total += 2400;
+    await sleep(400);
+    addHop({ mti: '0420', from: 'Scheme', to: 'Issuer', ms: 22, bytes: 112, cls: 'reversal', fields: revF }); total += 22;
+    await sleep(280);
+    const revAcc = [
+      { k: 'MTI', v: '0430 (reversal response)' },
+      { k: 'DE39 resp code', v: '00 (reversal accepted)' },
+    ];
+    addHop({ mti: '0430', from: 'Issuer', to: 'Scheme', ms: 18, bytes: 84, cls: 'res', fields: revAcc }); total += 18;
+    await sleep(200);
+    addHop({ mti: '0430', from: 'Scheme', to: 'Acquirer', ms: 16, bytes: 84, cls: 'res', fields: revAcc }); total += 16;
+
+    setCustomer({ status: '✓ AUTH HOLD RELEASED', sub: 'cardholder statement clean' });
+    setPanelState('ok');
+    if (timerEl) timerEl.textContent = total + 'ms';
+    if (traceSummary) {
+      traceSummary.className = 'tx-trace-summary fail';
+      traceSummary.innerHTML = `<b>✕ DECLINED</b> · RC 05 · reversed after 3 attempts · no funds captured`;
+    }
+
+    showResult({
+      head: '✕ declined · auto-reversed',
+      body: `Issuer returned <b>RC 05</b> (do not honor). Reversal MTI 0420 succeeded on attempt 3 · auth hold released · no funds captured · no receipt printed.`,
+      kind: 'fail',
+    });
   }
 
-  // Scroll so the terminal + the space above it (where the receipt
-  // will emerge) both fit in view. The scroll-margin-top set in CSS
-  // reserves the gap above the terminal for the receipt.
-  function scrollTerminalIntoFocus() {
-    const el = pay.device || document.getElementById('payDevice');
-    if (!el) { console.warn('[pay] payDevice not found for scroll'); return; }
-    // scrollIntoView is the most reliable way; scroll-margin-top handles the gap.
-    try {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } catch (_) {
-      el.scrollIntoView(true);
+  // ── Runner ────────────────────────────────────────────────
+  function scrollIntoFocus() {
+    if (stage && stage.scrollIntoView) {
+      try { stage.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      catch (_) { stage.scrollIntoView(true); }
     }
   }
 
@@ -4939,36 +5572,32 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
     if (running) return;
     running = true;
     buttons.forEach(b => b.disabled = true);
+    clearResult();
     clearReceipt();
-    showLive();
-    scrollTerminalIntoFocus();
+    clearTrace();
+    showActions(false);
+    scrollIntoFocus();
+
     try {
-      if (scenario === 'approve') {
-        await runApprove();
-        celebrate('win');
-      } else if (scenario === 'dcc') {
-        await runDcc();
-        celebrate('dcc');
-      } else if (scenario === 'decline') {
-        await runDecline();
-        celebrate('fail');
-      }
+      if (scenario === 'approve') { await runApprove(); celebrate('win'); }
+      else if (scenario === 'dcc') { await runDcc(); celebrate('dcc'); }
+      else if (scenario === 'decline') { await runDecline(); celebrate('fail'); }
     } catch (err) {
-      console.error('simulator error', err);
+      console.error('tx stage error', err);
     }
-    buttons.forEach(b => b.disabled = false);
+
     running = false;
-    // Settle, then return the terminal to ready (wait for receipt exit).
-    setTimeout(resetScreen, 3800);
+    // Give visitors time to explore, then reset to idle.
+    setTimeout(reset, 5200);
   }
 
   function celebrate(kind) {
-    const rect = (pay.device || document.body).getBoundingClientRect();
+    const rect = stage ? stage.getBoundingClientRect() : document.body.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
     if (kind === 'win' && window.spawnBurst) {
       ['63,185,80','57,210,192','88,166,255'].forEach((c, i) =>
-        setTimeout(() => window.spawnBurst(cx + (Math.random() - 0.5) * 120, cy, c, 18), i * 80)
+        setTimeout(() => window.spawnBurst(cx + (Math.random() - 0.5) * 160, cy, c, 18), i * 80)
       );
     } else if (kind === 'dcc' && window.spawnBurst) {
       window.spawnBurst(cx, cy, '210,153,34', 24);
@@ -4980,10 +5609,23 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
     }
   }
 
+  function reset() {
+    if (running) return;
+    buttons.forEach(b => b.disabled = false);
+    setPanelState('ready');
+    setCustomer({ amount: '€ 0.00', status: 'PICK A SCENARIO', sub: 'three ways a card transaction can go' });
+    clearResult();
+    clearReceipt();
+    setTraceEmpty();
+    if (traceSummary) { traceSummary.textContent = ''; traceSummary.className = 'tx-trace-summary'; }
+    if (timerEl) timerEl.textContent = '—';
+    showActions(true);
+  }
+
   buttons.forEach(b => b.addEventListener('click', () => run(b.dataset.scenario)));
 
-  // Initialize terminal to ready state on load
-  resetScreen();
+  // Init
+  reset();
 })();
 
 // ═══════════════════════════════════════════════════════════
