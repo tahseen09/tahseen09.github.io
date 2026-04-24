@@ -909,6 +909,45 @@
   .footer-code a { color: var(--blue); text-decoration: none; }
   .footer-code a:hover { text-decoration: underline; }
 
+  /* ── Signoff — subtle closing terminal at the very bottom ── */
+  .signoff {
+    max-width: 560px;
+    margin: 16px auto 60px;
+    padding: 0 24px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .signoff.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .signoff-body {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    line-height: 1.85;
+    color: #b1bac4;
+    text-align: left;
+    padding: 4px 0;
+  }
+  .signoff-line { white-space: pre-wrap; }
+  .signoff-line.out { color: var(--muted); padding-left: 2px; }
+  .signoff-line.out.muted { color: #484f58; font-style: italic; }
+  .signoff-prompt { color: var(--green); margin-right: 8px; }
+  .signoff-cmd { color: #c9d1d9; }
+  .signoff-cursor {
+    display: inline-block;
+    width: 7px;
+    height: 14px;
+    background: var(--green);
+    vertical-align: text-bottom;
+    margin-left: 2px;
+    animation: blink 1s step-end infinite;
+  }
+  .signoff-line.typing .signoff-cursor { opacity: 1; }
+  .signoff-line:not(.revealed):not(.prompt-only) { opacity: 0; }
+  .signoff-line.revealed { opacity: 1; transition: opacity 0.2s; }
+
   /* Skip button */
   .skip-btn {
     position: fixed;
@@ -1878,6 +1917,17 @@
       <a href="https://tahseenrahman.notion.site/Tahseen-Rahman-Resume-ae01040ae55f469b919d95963b1171b6" target="_blank">Full Resume</a>
     </div>
   </footer>
+
+  <!-- Signoff — one last terminal, visible only if you scrolled this far -->
+  <div class="signoff" id="signoff" aria-hidden="true">
+    <div class="signoff-body">
+      <div class="signoff-line" data-prompt="$" data-cmd="cat ~/.thanks"></div>
+      <div class="signoff-line out">thanks for reading. made it this far? that means something — send a line.</div>
+      <div class="signoff-line" data-prompt="$" data-cmd="logout"></div>
+      <div class="signoff-line out muted">Connection to tahseen-rahman closed.</div>
+      <div class="signoff-line prompt-only"><span class="signoff-prompt">$</span><span class="signoff-cursor"></span></div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -3814,6 +3864,65 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
   }
 
   buttons.forEach(b => b.addEventListener('click', () => run(b.dataset.scenario)));
+})();
+
+// ═══════════════════════════════════════════════════════════
+// SIGNOFF — subtle closing terminal, reveals on scroll-into-view
+// ═══════════════════════════════════════════════════════════
+(function() {
+  const box = document.getElementById('signoff');
+  if (!box) return;
+  const lines = Array.from(box.querySelectorAll('.signoff-line'));
+  let played = false;
+
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+  async function typeLine(el) {
+    const prompt = el.dataset.prompt;
+    const cmd = el.dataset.cmd;
+    el.classList.add('revealed', 'typing');
+    if (prompt && cmd) {
+      el.innerHTML = `<span class="signoff-prompt">${prompt}</span><span class="signoff-cmd"></span>`;
+      const cmdEl = el.querySelector('.signoff-cmd');
+      for (let i = 0; i < cmd.length; i++) {
+        cmdEl.textContent = cmd.slice(0, i + 1);
+        await sleep(28 + Math.random() * 20);
+      }
+    }
+    el.classList.remove('typing');
+  }
+
+  async function revealOutput(el) {
+    await sleep(120);
+    el.classList.add('revealed');
+  }
+
+  async function play() {
+    for (const line of lines) {
+      if (line.classList.contains('prompt-only')) {
+        line.classList.add('revealed');
+        continue;
+      }
+      if (line.dataset.prompt) {
+        await typeLine(line);
+        await sleep(200);
+      } else {
+        await revealOutput(line);
+      }
+    }
+  }
+
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting && !played) {
+        played = true;
+        box.classList.add('visible');
+        play();
+        obs.disconnect();
+      }
+    });
+  }, { threshold: 0.4 });
+  obs.observe(box);
 })();
 
 // Force scroll to top on load
