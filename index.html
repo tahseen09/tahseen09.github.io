@@ -1575,13 +1575,19 @@
     text-align: center;
   }
 
-  /* Footer — always reserved, shows hint or raw code */
+  /* Footer — shows raw MTI/response code during a run; hidden in idle */
   .pay-screen-foot {
     display: flex;
     align-items: baseline;
     gap: 12px;
     padding: 12px 20px 16px;
     min-height: 42px;
+  }
+  .pay-screen-foot-label:empty { display: none; }
+  /* In idle state, hide the footer and its divider so the LCD reads clean */
+  .pay-screen:not(.busy):not(.ok):not(.fail) .pay-screen-foot,
+  .pay-screen:not(.busy):not(.ok):not(.fail) .pay-screen-divider:last-of-type {
+    display: none;
   }
   .pay-screen-foot-label {
     flex-shrink: 0;
@@ -4657,12 +4663,7 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
   }
   function resetScreen() {
     setAmount('€ 0.00');
-    setScreen({
-      status: 'READY',
-      sub: 'pick a scenario',
-      code: 'open the network flow below for the full ISO 8583 log',
-      foot: 'HINT',
-    });
+    setScreen({ status: 'READY', sub: 'pick a scenario', code: '', foot: '' });
     setPayState('ready');
     showIdle();
   }
