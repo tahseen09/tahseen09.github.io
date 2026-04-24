@@ -1393,19 +1393,23 @@
       0 0 0 1px rgba(0,0,0,0.08),
       inset 0 0 50px rgba(180,150,100,0.14);
     position: relative;
-    transform-origin: top center;
-    animation: receiptDrop 0.5s cubic-bezier(.2,.9,.3,1.2) backwards;
+    animation: receiptPrint 1.1s cubic-bezier(.22,.8,.3,1) forwards;
+    transform-origin: center bottom;
+  }
+  /* Rises from below the viewport, revealing top-down like thermal
+     paper emerging from a printer slot. */
+  @keyframes receiptPrint {
+    0%   { transform: translateY(80vh) rotate(-0.4deg); clip-path: inset(0 0 100% 0); opacity: 1; }
+    20%  { transform: translateY(55vh) rotate(0.2deg);  clip-path: inset(0 0 92% 0); }
+    45%  { transform: translateY(28vh) rotate(-0.2deg); clip-path: inset(0 0 65% 0); }
+    70%  { transform: translateY(8vh)  rotate(0.15deg); clip-path: inset(0 0 30% 0); }
+    100% { transform: translateY(0)    rotate(0);       clip-path: inset(0 0 0 0); }
   }
   .sim-receipt.fade-out .sim-receipt-paper {
-    animation: receiptLift 0.35s ease forwards;
+    animation: receiptExit 0.5s ease-in forwards;
   }
-  @keyframes receiptDrop {
-    0%   { opacity: 0; transform: translateY(-60px) rotateX(-30deg) scale(0.9); }
-    60%  { opacity: 1; transform: translateY(6px)   rotateX(4deg)   scale(1.02); }
-    100% { opacity: 1; transform: translateY(0)     rotateX(0)       scale(1);    }
-  }
-  @keyframes receiptLift {
-    to { opacity: 0; transform: translateY(-40px) scale(0.96); }
+  @keyframes receiptExit {
+    to { opacity: 0; transform: translateY(-80vh) rotate(-0.6deg); }
   }
   .sim-receipt-rule {
     color: #9e896a;
@@ -3966,7 +3970,7 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
     setTimeout(() => {
       receiptEl.classList.remove('on', 'fade-out');
       receiptEl.innerHTML = '';
-    }, 340);
+    }, 520);
   }
 
   function renderReceipt(data) {
@@ -3994,7 +3998,8 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
     receiptEl.classList.add('on');
     // Auto-dismiss after the visitor has had time to glance
     if (receiptTimer) clearTimeout(receiptTimer);
-    receiptTimer = setTimeout(dismissReceipt, 1800);
+    // Print animation ~1.1s + ~1s dwell → dismiss
+    receiptTimer = setTimeout(dismissReceipt, 2100);
   }
 
   // Click anywhere on the overlay dismisses immediately
