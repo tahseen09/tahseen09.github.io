@@ -1369,6 +1369,9 @@
     position: relative;
     width: 100%;
     max-width: 560px;
+    /* Reserve room above the terminal for the receipt to extrude into
+       whenever we programmatically scroll it into view. */
+    scroll-margin-top: clamp(200px, 35vh, 400px);
     background: linear-gradient(155deg, #2a2f38 0%, #1b1f27 55%, #14171e 100%);
     border-radius: 30px;
     padding: 18px 18px 26px;
@@ -4919,16 +4922,17 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
   }
 
   // Scroll so the terminal + the space above it (where the receipt
-  // will emerge) both fit in view. Called at scenario start so visitors
-  // never have to chase the action.
+  // will emerge) both fit in view. The scroll-margin-top set in CSS
+  // reserves the gap above the terminal for the receipt.
   function scrollTerminalIntoFocus() {
-    if (!pay.device) return;
-    const vh = window.innerHeight || 800;
-    // Reserve ~35% of viewport above the terminal for the receipt.
-    const gap = Math.min(400, Math.max(180, vh * 0.35));
-    const rect = pay.device.getBoundingClientRect();
-    const target = rect.top + (window.scrollY || window.pageYOffset) - gap;
-    window.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
+    const el = pay.device || document.getElementById('payDevice');
+    if (!el) { console.warn('[pay] payDevice not found for scroll'); return; }
+    // scrollIntoView is the most reliable way; scroll-margin-top handles the gap.
+    try {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (_) {
+      el.scrollIntoView(true);
+    }
   }
 
   async function run(scenario) {
