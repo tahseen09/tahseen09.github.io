@@ -1356,34 +1356,56 @@
     100% { left: 0%; opacity: 1; transform: translate(-50%, -50%) scale(1); }
   }
 
-  /* ── Receipt card ── */
+  /* ── Receipt card — fullscreen overlay that flashes briefly ── */
   .sim-receipt {
+    position: fixed;
+    inset: 0;
+    z-index: 9500;
     display: none;
-    margin: 0 auto 18px;
-    max-width: 360px;
-    perspective: 800px;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(5, 8, 14, 0.72);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+    perspective: 1000px;
   }
-  .sim-receipt.on { display: block; }
+  .sim-receipt.on {
+    display: flex;
+    opacity: 1;
+  }
+  .sim-receipt.fade-out { opacity: 0; }
   .sim-receipt-paper {
     background: #faf6ef;
     color: #2a2018;
     font-family: var(--font-mono);
-    font-size: 0.82rem;
-    line-height: 1.55;
-    padding: 22px 24px 26px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    padding: 30px 32px 34px;
+    width: 100%;
+    max-width: 420px;
     border-radius: 4px 4px 10px 10px;
     box-shadow:
-      0 18px 50px rgba(0,0,0,0.45),
+      0 40px 100px rgba(0,0,0,0.75),
       0 0 0 1px rgba(0,0,0,0.08),
-      inset 0 0 40px rgba(180,150,100,0.12);
+      inset 0 0 50px rgba(180,150,100,0.14);
     position: relative;
     transform-origin: top center;
-    animation: receiptDrop 0.55s cubic-bezier(.2,.9,.3,1.1) backwards;
+    animation: receiptDrop 0.5s cubic-bezier(.2,.9,.3,1.2) backwards;
+  }
+  .sim-receipt.fade-out .sim-receipt-paper {
+    animation: receiptLift 0.35s ease forwards;
   }
   @keyframes receiptDrop {
-    0%   { opacity: 0; transform: translateY(-18px) rotateX(-24deg) scale(0.98); }
-    60%  { opacity: 1; transform: translateY(4px)  rotateX(3deg)   scale(1.01); }
-    100% { opacity: 1; transform: translateY(0)    rotateX(0)       scale(1);    }
+    0%   { opacity: 0; transform: translateY(-60px) rotateX(-30deg) scale(0.9); }
+    60%  { opacity: 1; transform: translateY(6px)   rotateX(4deg)   scale(1.02); }
+    100% { opacity: 1; transform: translateY(0)     rotateX(0)       scale(1);    }
+  }
+  @keyframes receiptLift {
+    to { opacity: 0; transform: translateY(-40px) scale(0.96); }
   }
   .sim-receipt-rule {
     color: #9e896a;
@@ -3929,21 +3951,34 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
 
   // ── Receipt renderer ──────────────────────────────────────
   const receiptEl = document.getElementById('simReceipt');
+  let receiptTimer = null;
+
   function clearReceipt() {
     if (!receiptEl) return;
-    receiptEl.classList.remove('on');
+    if (receiptTimer) { clearTimeout(receiptTimer); receiptTimer = null; }
+    receiptEl.classList.remove('on', 'fade-out');
     receiptEl.innerHTML = '';
   }
+
+  function dismissReceipt() {
+    if (!receiptEl || !receiptEl.classList.contains('on')) return;
+    receiptEl.classList.add('fade-out');
+    setTimeout(() => {
+      receiptEl.classList.remove('on', 'fade-out');
+      receiptEl.innerHTML = '';
+    }, 340);
+  }
+
   function renderReceipt(data) {
     if (!receiptEl) return;
-    const rule = '<div class="sim-receipt-rule">· · · · · · · · · · · · · · · ·</div>';
-    const bars = Array.from({length: 28}, () => {
-      const h = 14 + Math.random() * 14;
+    const rule = '<div class="sim-receipt-rule">· · · · · · · · · · · · · · · · · · ·</div>';
+    const bars = Array.from({length: 32}, () => {
+      const h = 16 + Math.random() * 16;
       return `<span style="height:${h}px"></span>`;
     }).join('');
     const rows = data.rows.map(r => `<dt>${r.k}</dt><dd class="${r.cls || ''}">${r.v}</dd>`).join('');
     receiptEl.innerHTML = `
-      <div class="sim-receipt-paper">
+      <div class="sim-receipt-paper" role="dialog" aria-label="Transaction receipt">
         ${rule}
         <div class="sim-receipt-brand">TEYA · PAYMENT TERMINAL</div>
         <div class="sim-receipt-meta">${data.time} · ${data.location}</div>
@@ -3955,8 +3990,21 @@ Remote-friendly. Lisbon / London / Berlin preferred.`;
         <div class="sim-receipt-sig">TRN ${data.trn}</div>
       </div>
     `;
+    receiptEl.classList.remove('fade-out');
     receiptEl.classList.add('on');
+    // Auto-dismiss after the visitor has had time to glance
+    if (receiptTimer) clearTimeout(receiptTimer);
+    receiptTimer = setTimeout(dismissReceipt, 1800);
   }
+
+  // Click anywhere on the overlay dismisses immediately
+  if (receiptEl) {
+    receiptEl.addEventListener('click', dismissReceipt);
+  }
+  // Esc dismisses too
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && receiptEl && receiptEl.classList.contains('on')) dismissReceipt();
+  });
   function nowStamp() {
     const d = new Date();
     return d.toTimeString().slice(0,5) + ' · ' + d.toISOString().slice(0,10);
